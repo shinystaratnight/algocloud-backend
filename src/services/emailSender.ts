@@ -57,6 +57,8 @@ export default class EmailSender {
   variables: any;
 
   constructor(template, variables) {
+    console.log("Dev Log");
+    console.log(template);
     this.template = template;
     this.variables = variables;
   }
@@ -76,6 +78,9 @@ export default class EmailSender {
   }
 
   async sendTo(recipient) {
+    console.log("Dev Log");
+    console.log(recipient);
+    
     if (!EmailSender.isConfigured) {
       console.error(`Email provider is not configured.`);
       return;
