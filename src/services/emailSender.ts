@@ -85,7 +85,6 @@ export default class EmailSender {
     
     try {
       let mgTemplate = mailer.getTemplate(this.template);
-      console.log(mgTemplate);
       if (mgTemplate && mgTemplate instanceof MailgunTemplate)
         return await mailer.sendFromTemplate(recipient, mgTemplate, this.variables);
     } catch (error) {
