@@ -11,9 +11,9 @@ mailer.fromEmail = getConfig().MAILGUN_EMAIL_FROM;
 mailer.fromTitle = getConfig().MAILGUN_TITLE_FROM;
 mailer.unsubscribeLink = false;
 
-mailer.templates[getConfig().SENDGRID_TEMPLATE_EMAIL_ADDRESS_VERIFICATION] = new MailgunTemplate();
-mailer.templates[getConfig().SENDGRID_TEMPLATE_EMAIL_ADDRESS_VERIFICATION].subject = 'Verify your email for ScaffoldHub';
-mailer.templates[getConfig().SENDGRID_TEMPLATE_EMAIL_ADDRESS_VERIFICATION].body = '\
+mailer.templates[getConfig().MAILGUN_TEMPLATE_EMAIL_ADDRESS_VERIFICATION] = new MailgunTemplate();
+mailer.templates[getConfig().MAILGUN_TEMPLATE_EMAIL_ADDRESS_VERIFICATION].subject = 'Verify your email for ScaffoldHub';
+mailer.templates[getConfig().MAILGUN_TEMPLATE_EMAIL_ADDRESS_VERIFICATION].body = '\
     <p>Hello,</p> \
     <p>Follow this link to verify your email address.</p> \
     <p><a href="{{link}}">{{link}}</a></p> \
@@ -24,9 +24,9 @@ mailer.templates[getConfig().SENDGRID_TEMPLATE_EMAIL_ADDRESS_VERIFICATION].body 
     <p>Thanks,</p> \
     <p>Your ScaffoldHub team</p>';
 
-mailer.templates[getConfig().SENDGRID_TEMPLATE_INVITATION] = new MailgunTemplate();
-mailer.templates[getConfig().SENDGRID_TEMPLATE_INVITATION].subject = 'You\'ve been invited to {{tenant.name}} at ScaffoldHub';
-mailer.templates[getConfig().SENDGRID_TEMPLATE_INVITATION].body = '\
+mailer.templates[getConfig().MAILGUN_TEMPLATE_INVITATION] = new MailgunTemplate();
+mailer.templates[getConfig().MAILGUN_TEMPLATE_INVITATION].subject = 'You\'ve been invited to {{tenant.name}} at ScaffoldHub';
+mailer.templates[getConfig().MAILGUN_TEMPLATE_INVITATION].body = '\
     <p>Hello,</p> \
     <p>You\'ve been invited to {{tenant.name}}.</p> \
     <p>Follow this link to register.</p> \
@@ -57,8 +57,6 @@ export default class EmailSender {
   variables: any;
 
   constructor(template, variables) {
-    console.log("Dev Log");
-    console.log(template);
     this.template = template;
     this.variables = variables;
   }
@@ -78,30 +76,16 @@ export default class EmailSender {
   }
 
   async sendTo(recipient) {
-    console.log("Dev Log");
-    console.log(recipient);
-    
     if (!EmailSender.isConfigured) {
       console.error(`Email provider is not configured.`);
       return;
     }
 
     assert(recipient, 'to is required');
-    // assert(
-    //   getConfig().SENDGRID_EMAIL_FROM,
-    //   'SENDGRID_EMAIL_FROM is required',
-    // );
-    // assert(this.templateId, 'templateId is required');
-
-    // const msg = {
-    //   to: recipient,
-    //   from: getConfig().SENDGRID_EMAIL_FROM,
-    //   templateId: this.templateId,
-    //   dynamicTemplateData: this.variables,
-    // };
-
+    
     try {
       let mgTemplate = mailer.getTemplate(this.template);
+      console.log(mgTemplate);
       if (mgTemplate && mgTemplate instanceof MailgunTemplate)
         return await mailer.sendFromTemplate(recipient, mgTemplate, this.variables);
     } catch (error) {
