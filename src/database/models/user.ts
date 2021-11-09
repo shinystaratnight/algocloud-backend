@@ -107,7 +107,7 @@ export default function (sequelize, DataTypes) {
         allowNull: false,
         defaultValue: false,
       },
-      superAdmin: {
+      superadmin: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,
