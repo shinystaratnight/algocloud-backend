@@ -1,7 +1,7 @@
-import PermissionChecker from '../../services/user/permissionChecker';
-import ApiResponseHandler from '../apiResponseHandler';
-import Permissions from '../../security/permissions';
-import SuperadminService from '../../services/superadminService';
+import PermissionChecker from '../../../services/user/permissionChecker';
+import ApiResponseHandler from '../../apiResponseHandler';
+import Permissions from '../../../security/permissions';
+import SuperadminService from '../../../services/superadminService';
 
 export default async (req, res) => {
   try {
@@ -9,7 +9,7 @@ export default async (req, res) => {
       Permissions.values.userUpdateBySuperadmin,
     );
 
-    let superadminService = new SuperadminService(req);
+    const superadminService = new SuperadminService(req);
 
     await superadminService.updateUser(req.params.userId);
 

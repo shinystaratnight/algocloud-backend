@@ -1,15 +1,8 @@
 import SequelizeRepository from '../../database/repositories/sequelizeRepository';
-import FileRepository from './fileRepository';
 import AuditLogRepository from './auditLogRepository';
-import crypto from 'crypto';
 import SequelizeFilterUtils from '../../database/utils/sequelizeFilterUtils';
-import Error404 from '../../errors/Error404';
 import Sequelize from 'sequelize';
-import { isUserInTenant } from '../utils/userTenantUtils';
-import { getConfig } from '../../config';
 import { IRepositoryOptions } from './IRepositoryOptions';
-import SequelizeArrayUtils from '../utils/sequelizeArrayUtils';
-import lodash from 'lodash';
 
 const Op = Sequelize.Op;
 
@@ -121,5 +114,53 @@ export default class SuperadminRepository {
     );
 
     return user;
+  }
+
+  static async fetchAllTenants(
+    { filter, limit = 0, offset = 0, orderBy = '' },
+    options: IRepositoryOptions,
+  ) {
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    let whereAnd: Array<any> = [];
+    let include: any = [];
+
+    if (filter) {
+      if (filter.id) {
+        whereAnd.push({
+          ['id']: filter.id,
+        });
+      }
+
+      if (filter.name) {
+        whereAnd.push(
+          SequelizeFilterUtils.ilikeIncludes(
+            'tenant',
+            'name',
+            filter.name,
+          ),
+        );
+      }
+    }
+
+    const where = { [Op.and]: whereAnd };
+
+    let {
+      rows,
+      count,
+    } = await options.database.tenant.findAndCountAll({
+      where,
+      include,
+      limit: limit ? Number(limit) : undefined,
+      offset: offset ? Number(offset) : undefined,
+      order: orderBy
+        ? [orderBy.split('_')]
+        : [['name', 'ASC']],
+      transaction,
+    });
+
+    return { rows, count };
   }
 }

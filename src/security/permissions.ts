@@ -250,6 +250,22 @@ class Permissions {
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
+
+      tenantReadBySuperadmin: {
+        id: 'tenantReadBySuperadmin',
+        allowedRoles: [roles.superadmin],
+        allowedPlans: [],
+      },
+      tenantCreateBySuperadmin: {
+        id: 'tenantCreateBySuperadmin',
+        allowedRoles: [roles.superadmin],
+        allowedPlans: [],
+      },
+      tenantDestroyBySuperadmin: {
+        id: 'tenantDestroyBySuperadmin',
+        allowedRoles: [roles.superadmin],
+        allowedPlans: [],
+      },
     };
   }
 
