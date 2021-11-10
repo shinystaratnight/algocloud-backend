@@ -239,7 +239,17 @@ class Permissions {
         id: 'orderAutocomplete',
         allowedRoles: [roles.admin, roles.custom],
         allowedPlans: [plans.free, plans.growth, plans.enterprise],
-      },      
+      },
+      userReadBySuperadmin: {
+        id: 'userReadBySuperadmin',
+        allowedRoles: [roles.superadmin],
+        allowedPlans: [],
+      },
+      userUpdateBySuperadmin: {
+        id: 'userUpdateBySuperadmin',
+        allowedRoles: [roles.superadmin],
+        allowedPlans: [],
+      },
     };
   }
 
