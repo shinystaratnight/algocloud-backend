@@ -83,11 +83,11 @@ export default class SuperadminService {
         transaction,
       });
 
-      // await SettingsService.findOrCreateDefault({
-      //   ...this.options,
-      //   currentTenant: tenant,
-      //   transaction,
-      // });
+      await SettingsService.findOrCreateDefault({
+        ...this.options,
+        currentTenant: tenant,
+        transaction,
+      });
 
       const tenantUser = await SuperadminRepository.createTenantUser(
         tenant,
