@@ -17,9 +17,8 @@ export default async (req, res) => {
     );
 
     if (event.type === 'checkout.session.completed') {
-      console.log("Logged by Me");
-      console.log(event.data);
-      
+      const planSubscriptionId = event.data.object.subscription;
+
       let data = event.data.object;
       data = await stripe.checkout.sessions.retrieve(
         data.id,
@@ -42,11 +41,18 @@ export default async (req, res) => {
       );
       const planStripeCustomerId = data.customer;
 
-      await new TenantService(req).updatePlanStatus(
+      const tenantService = new TenantService(req);
+
+      await tenantService.updatePlanStatus(
         planStripeCustomerId,
         plan,
         'active',
       );
+
+      await tenantService.updatePlanSubscriptionId(
+        planStripeCustomerId,
+        planSubscriptionId,
+      )
     }
 
     if (event.type === 'customer.subscription.updated') {
