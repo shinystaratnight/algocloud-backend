@@ -24,9 +24,16 @@ export default class SuperadminService {
   }
 
   async fetchAllUsers(args) {
+    const transaction = await SequelizeRepository.createTransaction(
+      this.options.database,
+    );
+    
     return SuperadminRepository.fetchAllUsers(
       args,
-      this.options,
+      {
+        ...this.options,
+        transaction,
+      },
     );
   }
 
@@ -36,7 +43,12 @@ export default class SuperadminService {
         this.options.database,
       );
 
-      await SuperadminRepository.updateUserStatus(id, this.options);
+      await SuperadminRepository.updateUserStatus(
+        id, 
+        {
+          ...this.options,
+          transaction: this.transaction,
+        });
 
       await SequelizeRepository.commitTransaction(
         this.transaction
@@ -52,9 +64,16 @@ export default class SuperadminService {
   }
 
   async fetchAllTenants(args) {
+    const transaction = await SequelizeRepository.createTransaction(
+      this.options.database,
+    );
+
     return SuperadminRepository.fetchAllTenants(
       args,
-      this.options,
+      {
+        ...this.options,
+        transaction,
+      },
     );
   }
 
@@ -165,8 +184,40 @@ export default class SuperadminService {
   }
 
   async fetchAnalytics() {
-    return SuperadminRepository.fetchAnalytics(
-      this.options,
+    const transaction = await SequelizeRepository.createTransaction(
+      this.options.database,
     );
+
+    return SuperadminRepository.fetchAnalytics(
+      {
+        ...this.options,
+        transaction,
+      },
+    );
+  }
+
+  async cancelSubscription(tenantId) {
+    const transaction = await SequelizeRepository.createTransaction(
+      this.options.database,
+    );
+
+    try {
+      SuperadminRepository.cancelSubscription(
+        tenantId,
+        {
+          ...this.options,
+          transaction,
+        }
+      );
+
+      await SequelizeRepository.commitTransaction(
+        transaction,
+      );
+    } catch (error) {
+      await SequelizeRepository.rollbackTransaction(
+        transaction,
+      );
+      throw error;
+    }
   }
 }

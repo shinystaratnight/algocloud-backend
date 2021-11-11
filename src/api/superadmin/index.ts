@@ -27,5 +27,10 @@ export default (app) => {
   app.get(
     `/superadmin/analytics`,
     require('./analytics/analytics').default,
-  )
+  );
+
+  app.put(
+    `/superadmin/cancel-subscription`,
+    require('./tenant/cancelSubscription').default,
+  );
 };

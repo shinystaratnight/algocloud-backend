@@ -9,6 +9,8 @@ import lodash from 'lodash';
 import Error400 from '../../errors/Error400';
 import UserRepository from './userRepository';
 import crypto from 'crypto';
+import Error401 from '../../errors/Error401';
+import { getConfig } from '../../config';
 
 const Op = Sequelize.Op;
 
@@ -85,10 +87,6 @@ export default class SuperadminRepository {
     id,
     options: IRepositoryOptions,
   ) {
-    const currentUser = SequelizeRepository.getCurrentUser(
-      options
-    );
-
     const transaction = SequelizeRepository.getTransaction(
       options
     );
@@ -405,5 +403,40 @@ export default class SuperadminRepository {
     });
 
     return { userCount, tenantCount };
+  }
+
+  static async cancelSubscription(
+    tenantId,
+    options: IRepositoryOptions,
+  ) {
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    const tenant = await options.database.tenant.findByPk(
+      tenantId,
+      {
+        transaction,
+      },
+    );
+
+    if (!tenant) {
+      throw new Error401();
+    }
+
+    const planSubscriptionId = tenant.planSubscriptionId;
+
+    if (!getConfig().PLAN_STRIPE_SECRET_KEY) {
+      throw new Error400(
+        options.language,
+        'tenant.stripeNotConfigured',
+      );
+    }
+
+    const stripe = require('stripe')(
+      getConfig().PLAN_STRIPE_SECRET_KEY,
+    );
+
+    await stripe.subscriptions.update(planSubscriptionId, {cancel_at_period_end: true});
   }
 }
