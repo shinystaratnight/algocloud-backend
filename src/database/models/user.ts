@@ -102,6 +102,16 @@ export default function (sequelize, DataTypes) {
           len: [0, 255],
         },
       },
+      active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      superadmin: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      }
     },
     {
       indexes: [

@@ -99,7 +99,10 @@ export default class UserCreator {
 
     if (!user) {
       user = await UserRepository.create(
-        { email },
+        {
+          email,
+          active: true
+        },
         {
           ...this.options,
           transaction: this.transaction,
