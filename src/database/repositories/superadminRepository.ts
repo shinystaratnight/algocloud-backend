@@ -4,6 +4,11 @@ import AuditLogRepository from './auditLogRepository';
 import SequelizeFilterUtils from '../../database/utils/sequelizeFilterUtils';
 import { IRepositoryOptions } from './IRepositoryOptions';
 import Error404 from '../../errors/Error404';
+import { v4 as uuid } from 'uuid';
+import lodash from 'lodash';
+import Error400 from '../../errors/Error400';
+import UserRepository from './userRepository';
+import crypto from 'crypto';
 
 const Op = Sequelize.Op;
 
@@ -235,5 +240,142 @@ export default class SuperadminRepository {
       },
       options,
     );
+  }
+
+  static async createUser(email, options: IRepositoryOptions) {
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    let user = await options.database.user.findOne({
+      where: {
+        [Op.and]: SequelizeFilterUtils.ilikeExact(
+          'user',
+          'email',
+          email,
+        ),
+      },
+      transaction,
+    });
+
+    if (!user) {
+      user = await UserRepository.create(
+        {
+          email,
+          active: true
+        },
+        {
+          ...options,
+          transaction,
+        },
+      );
+    }
+
+    return user;
+  }
+
+  static async createTenant(data, options: IRepositoryOptions) {
+    const forbiddenTenantUrls = ['www'];
+    
+    const currentUser = SequelizeRepository.getCurrentUser(
+      options,
+    );
+
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    // URL is required,
+    // in case of multi tenant without subdomain
+    // set a random uuid
+    data.url = data.url || uuid();
+
+    const existsUrl = Boolean(
+      await options.database.tenant.count({
+        where: { url: data.url },
+        transaction,
+      }),
+    );
+
+    if (
+      forbiddenTenantUrls.includes(data.url) ||
+      existsUrl
+    ) {
+      throw new Error400(
+        options.language,
+        'tenant.url.exists',
+      );
+    }
+
+    const record = await options.database.tenant.create(
+      {
+        ...lodash.pick(data, [
+          'id',
+          'name',
+          'url',
+          'importHash',
+        ]),
+        createdById: currentUser.id,
+        updatedById: currentUser.id,
+      },
+      {
+        transaction,
+      },
+    );
+
+    await this._createTenantAuditLog(
+      AuditLogRepository.CREATE,
+      record,
+      data,
+      {
+        ...options,
+        currentTenant: record,
+      },
+    );
+
+    return record;
+  }
+
+  static async createTenantUser(
+    tenant,
+    user,
+    roles,
+    options: IRepositoryOptions,
+  ) {
+    roles = roles || [];
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    const status = 'invited';
+
+    const tenantUser = await options.database.tenantUser.create(
+      {
+        tenantId: tenant.id,
+        userId: user.id,
+        status,
+        invitationToken: crypto
+          .randomBytes(20)
+          .toString('hex'),
+        roles,
+      },
+      { transaction },
+    );
+
+    await AuditLogRepository.log(
+      {
+        entityName: 'user',
+        entityId: user.id,
+        action: AuditLogRepository.CREATE,
+        values: {
+          email: user.email,
+          status,
+          roles,
+        },
+      },
+      options,
+    );
+
+    return tenantUser;
   }
 }

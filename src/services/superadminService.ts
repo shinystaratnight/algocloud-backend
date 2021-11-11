@@ -6,6 +6,12 @@ import Permissions from '../security/permissions';
 import TenantRepository from '../database/repositories/tenantRepository';
 import Plans from '../security/plans';
 import Error400 from '../errors/Error400';
+import SettingsService from './settingsService';
+import TenantUserRepository from '../database/repositories/tenantUserRepository';
+import Roles from '../security/roles';
+import { getConfig } from '../config';
+import EmailSender from './emailSender';
+import { tenantSubdomain } from './tenantSubdomain';
 
 export default class SuperadminService {
   options: IServiceOptions;
@@ -50,6 +56,70 @@ export default class SuperadminService {
       args,
       this.options,
     );
+  }
+
+  async createTenant(data) {
+    const { email, name } = data;
+
+    const transaction = await SequelizeRepository.createTransaction(
+      this.options.database,
+    );
+
+    try {
+      if (getConfig().TENANT_MODE === 'single') {
+        throw new Error400(
+          this.options.language,
+          'tenant.exists',
+        );
+      }
+
+      const user = await SuperadminRepository.createUser(email, {
+        ...this.options,
+        transaction,
+      });
+
+      const tenant = await SuperadminRepository.createTenant({ name }, {
+        ...this.options,
+        transaction,
+      });
+
+      // await SettingsService.findOrCreateDefault({
+      //   ...this.options,
+      //   currentTenant: tenant,
+      //   transaction,
+      // });
+
+      const tenantUser = await SuperadminRepository.createTenantUser(
+        tenant,
+        user,
+        [Roles.values.admin],
+        {
+          ...this.options,
+          transaction,
+        },
+      );
+
+      const link = `${tenantSubdomain.frontendUrl(
+        this.options.currentTenant,
+      )}/auth/invitation?token=${tenantUser.invitationToken}`;
+
+      new EmailSender(
+        EmailSender.TEMPLATES.INVITATION,
+        {
+          tenant: tenant,
+          link,
+        },
+      ).sendTo(email);
+
+      await SequelizeRepository.commitTransaction(
+        transaction,
+      );
+    } catch (error) {
+      await SequelizeRepository.rollbackTransaction(
+        transaction,
+      );
+      throw error;
+    }
   }
 
   async destroyTenants(ids) {

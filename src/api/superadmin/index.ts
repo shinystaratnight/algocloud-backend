@@ -14,6 +14,11 @@ export default (app) => {
     require('./tenant/tenantList').default,
   );
 
+  app.post(
+    `/superadmin/tenant`,
+    require('./tenant/tenantCreate').default,
+  );
+
   app.delete(
     `/superadmin/tenant`,
     require('./tenant/tenantDestroy').default,
