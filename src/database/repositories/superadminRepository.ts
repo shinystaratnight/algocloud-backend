@@ -378,4 +378,32 @@ export default class SuperadminRepository {
 
     return tenantUser;
   }
+
+  static async fetchAnalytics(
+    options: IRepositoryOptions,
+  ) {
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    let whereAnd: Array<any> = [];
+    
+
+    whereAnd.push({
+      ['superadmin']: false,
+    });
+
+    const where = { [Op.and]: whereAnd };
+
+    const userCount = await options.database.user.count({
+      where,
+      transaction,
+    });
+
+    const tenantCount = await options.database.tenant.count({
+      transaction,
+    });
+
+    return { userCount, tenantCount };
+  }
 }

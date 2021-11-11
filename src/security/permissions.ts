@@ -266,6 +266,11 @@ class Permissions {
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
+      analyticsFetchBySuperadmin: {
+        id: 'analyticsFetchBySuperadmin',
+        allowedRoles: [roles.superadmin],
+        allowedPlans: [],
+      },
     };
   }
 

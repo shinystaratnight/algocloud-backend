@@ -23,5 +23,9 @@ export default (app) => {
     `/superadmin/tenant`,
     require('./tenant/tenantDestroy').default,
   );
+
+  app.get(
+    `/superadmin/analytics`,
+    require('./analytics/analytics').default,
+  )
 };
-  

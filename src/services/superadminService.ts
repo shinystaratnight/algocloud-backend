@@ -163,4 +163,10 @@ export default class SuperadminService {
       throw error;
     }
   }
+
+  async fetchAnalytics() {
+    return SuperadminRepository.fetchAnalytics(
+      this.options,
+    );
+  }
 }
