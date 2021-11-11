@@ -17,6 +17,9 @@ export default async (req, res) => {
     );
 
     if (event.type === 'checkout.session.completed') {
+      console.log("Logged by Me");
+      console.log(event.data);
+      
       let data = event.data.object;
       data = await stripe.checkout.sessions.retrieve(
         data.id,

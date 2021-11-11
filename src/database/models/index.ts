@@ -30,9 +30,9 @@ function models() {
                 }),
               )
           : false,
-      // dialectOptions: {
-      //   ssl: true,
-      // }
+      dialectOptions: {
+        ssl: true,
+      }
     },
   );
 
