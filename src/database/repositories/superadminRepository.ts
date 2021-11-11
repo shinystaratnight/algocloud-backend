@@ -438,5 +438,7 @@ export default class SuperadminRepository {
     );
 
     await stripe.subscriptions.update(planSubscriptionId, {cancel_at_period_end: true});
+
+    return true;
   }
 }
