@@ -1,5 +1,7 @@
 import Error403 from '../../../errors/Error403';
 import ApiResponseHandler from '../../apiResponseHandler';
+import PermissionChecker from '../../../services/user/permissionChecker';
+import Permissions from '../../../security/permissions';
 import SuperadminService from '../../../services/superadminService';
 
 export default async (req, res, next) => {
@@ -7,6 +9,10 @@ export default async (req, res, next) => {
     if (!req.currentUser || !req.currentUser.id) {
       throw new Error403(req.language);
     }
+
+    new PermissionChecker(req).validateHas(
+      Permissions.values.tenantDestroyBySuperadmin,
+    );
 
     // In the case of the Tenant, specific permissions like tenantDestroy and tenantEdit are
     // checked inside the service

@@ -59,16 +59,10 @@ export default class SuperadminService {
 
     try {
       for (const id of ids) {
-        const tenant = await TenantRepository.findById(id, {
+        const tenant = await SuperadminRepository.findTenantById(id, {
           ...this.options,
           transaction,
-          currentTenant: { id },
         });
-
-        new PermissionChecker({
-          ...this.options,
-          currentTenant: tenant,
-        }).validateHas(Permissions.values.tenantDestroyBySuperadmin);
 
         if (
           !Plans.allowTenantDestroy(
@@ -82,7 +76,7 @@ export default class SuperadminService {
           );
         }
 
-        await TenantRepository.destroy(id, {
+        await SuperadminRepository.destroyTenantById(id, {
           ...this.options,
           transaction,
           currentTenant: { id },

@@ -1,8 +1,9 @@
+import Sequelize from 'sequelize';
 import SequelizeRepository from '../../database/repositories/sequelizeRepository';
 import AuditLogRepository from './auditLogRepository';
 import SequelizeFilterUtils from '../../database/utils/sequelizeFilterUtils';
-import Sequelize from 'sequelize';
 import { IRepositoryOptions } from './IRepositoryOptions';
+import Error404 from '../../errors/Error404';
 
 const Op = Sequelize.Op;
 
@@ -162,5 +163,77 @@ export default class SuperadminRepository {
     });
 
     return { rows, count };
+  }
+
+  static async findTenantById(id, options: IRepositoryOptions) {
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    const record = await options.database.tenant.findByPk(
+      id,
+      {
+        transaction,
+      },
+    );
+
+    return record;
+  }
+
+  static async destroyTenantById(id, options: IRepositoryOptions) {
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    const currentUser = SequelizeRepository.getCurrentUser(
+      options,
+    );
+
+    let record = await options.database.tenant.findByPk(
+      id,
+      {
+        transaction,
+      },
+    );
+
+    if (!currentUser.superadmin) {
+      throw new Error404();
+    }
+
+    await record.destroy({
+      transaction,
+    });
+
+    await this._createTenantAuditLog(
+      AuditLogRepository.DELETE,
+      record,
+      record,
+      options,
+    );
+  }
+
+  static async _createTenantAuditLog(
+    action,
+    record,
+    data,
+    options: IRepositoryOptions,
+  ) {
+    let values = {};
+
+    if (data) {
+      values = {
+        ...record.get({ plain: true }),
+      };
+    }
+
+    await AuditLogRepository.log(
+      {
+        entityName: 'tenant',
+        entityId: record.id,
+        action,
+        values,
+      },
+      options,
+    );
   }
 }
