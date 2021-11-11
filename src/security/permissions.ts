@@ -271,6 +271,11 @@ class Permissions {
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
+      subscriptionCancelBySuperadmin: {
+        id: 'subscriptionCancelBySuperadmin',
+        allowedRoles: [roles.superadmin],
+        allowedPlans: [],
+      },
     };
   }
 
