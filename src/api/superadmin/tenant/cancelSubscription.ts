@@ -14,9 +14,6 @@ export default async (req, res, next) => {
       Permissions.values.subscriptionCancelBySuperadmin,
     );
 
-    console.log("Logged by Me")
-    console.log(req.body)
-
     const payload = await new SuperadminService(req).cancelSubscription(
       req.body.tenantId,
     );
