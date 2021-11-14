@@ -24,10 +24,6 @@ export default class SuperadminService {
   }
 
   async fetchAllUsers(args) {
-    // const transaction = await SequelizeRepository.createTransaction(
-    //   this.options.database,
-    // );
-    
     return SuperadminRepository.fetchAllUsers(
       args,
       this.options,
@@ -40,7 +36,7 @@ export default class SuperadminService {
         this.options.database,
       );
 
-      await SuperadminRepository.updateUserStatus(
+      const user = await SuperadminRepository.updateUserStatus(
         id, 
         {
           ...this.options,
@@ -50,6 +46,11 @@ export default class SuperadminService {
       await SequelizeRepository.commitTransaction(
         this.transaction
       );
+
+      await new EmailSender(
+        EmailSender.TEMPLATES.USER_UPDATED,
+        {done: user.active ? "approved" : "frozen"},
+      ).sendTo(user.email);
 
     } catch (error) {
       await SequelizeRepository.rollbackTransaction(
@@ -61,10 +62,6 @@ export default class SuperadminService {
   }
 
   async fetchAllTenants(args) {
-    // const transaction = await SequelizeRepository.createTransaction(
-    //   this.options.database,
-    // );
-
     return SuperadminRepository.fetchAllTenants(
       args,
       this.options,
@@ -119,7 +116,7 @@ export default class SuperadminService {
       new EmailSender(
         EmailSender.TEMPLATES.INVITATION,
         {
-          tenant: tenant,
+          tenantName: tenant.name,
           link,
         },
       ).sendTo(email);
@@ -178,10 +175,6 @@ export default class SuperadminService {
   }
 
   async fetchAnalytics() {
-    // const transaction = await SequelizeRepository.createTransaction(
-    //   this.options.database,
-    // );
-
     return SuperadminRepository.fetchAnalytics(
       this.options,
     );

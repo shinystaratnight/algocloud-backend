@@ -25,10 +25,10 @@ mailer.templates[getConfig().MAILGUN_TEMPLATE_EMAIL_ADDRESS_VERIFICATION].body =
     <p>Your ScaffoldHub team</p>';
 
 mailer.templates[getConfig().MAILGUN_TEMPLATE_INVITATION] = new MailgunTemplate();
-mailer.templates[getConfig().MAILGUN_TEMPLATE_INVITATION].subject = 'You\'ve been invited to {{tenant.name}} at ScaffoldHub';
+mailer.templates[getConfig().MAILGUN_TEMPLATE_INVITATION].subject = 'You\'ve been invited to {{tenantName}} at ScaffoldHub';
 mailer.templates[getConfig().MAILGUN_TEMPLATE_INVITATION].body = '\
     <p>Hello,</p> \
-    <p>You\'ve been invited to {{tenant.name}}.</p> \
+    <p>You\'ve been invited to {{tenantName}}.</p> \
     <p>Follow this link to register.</p> \
     <p><a href="{{link}}">{{link}}</a></p> \
     <p>Thanks,</p> \
@@ -49,7 +49,15 @@ mailer.templates[getConfig().MAILGUN_TEMPLATE_PASSWORD_RESET].body = '\
     </p> \
     <p>Thanks,</p> \
     <p>Your ScaffoldHub team</p>';
-  
+
+mailer.templates[getConfig().MAILGUN_TEMPLATE_USER_UPDATED] = new MailgunTemplate();
+mailer.templates[getConfig().MAILGUN_TEMPLATE_USER_UPDATED].subject = 'Your account has been {{done}}.';
+mailer.templates[getConfig().MAILGUN_TEMPLATE_USER_UPDATED].body = '\
+    <p>Hello,</p> \
+    <p>Your account has been {{done}}</p>\
+    <p>Thanks,</p> \
+    <p>Your ScaffoldHub team</p>';
+
 mailer.init();
 
 export default class EmailSender {
@@ -67,11 +75,10 @@ export default class EmailSender {
     }
 
     return {
-      EMAIL_ADDRESS_VERIFICATION: getConfig()
-        .MAILGUN_TEMPLATE_EMAIL_ADDRESS_VERIFICATION,
+      EMAIL_ADDRESS_VERIFICATION: getConfig().MAILGUN_TEMPLATE_EMAIL_ADDRESS_VERIFICATION,
       INVITATION: getConfig().MAILGUN_TEMPLATE_INVITATION,
-      PASSWORD_RESET: getConfig()
-        .MAILGUN_TEMPLATE_PASSWORD_RESET,
+      PASSWORD_RESET: getConfig().MAILGUN_TEMPLATE_PASSWORD_RESET,
+      USER_UPDATED: getConfig().MAILGUN_TEMPLATE_USER_UPDATED,
     };
   }
 
