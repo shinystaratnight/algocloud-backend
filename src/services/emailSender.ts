@@ -51,10 +51,10 @@ mailer.templates[getConfig().MAILGUN_TEMPLATE_PASSWORD_RESET].body = '\
     <p>Your ScaffoldHub team</p>';
 
 mailer.templates[getConfig().MAILGUN_TEMPLATE_USER_UPDATED] = new MailgunTemplate();
-mailer.templates[getConfig().MAILGUN_TEMPLATE_USER_UPDATED].subject = 'Your account has been {{done}}.';
+mailer.templates[getConfig().MAILGUN_TEMPLATE_USER_UPDATED].subject = 'Your account has been {{done}} by ScaffoldHub';
 mailer.templates[getConfig().MAILGUN_TEMPLATE_USER_UPDATED].body = '\
     <p>Hello,</p> \
-    <p>Your account has been {{done}}</p>\
+    <p>Your account has been {{done}} by ScaffoldHub.</p>\
     <p>Thanks,</p> \
     <p>Your ScaffoldHub team</p>';
 
