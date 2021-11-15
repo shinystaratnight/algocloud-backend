@@ -240,39 +240,39 @@ class Permissions {
         allowedRoles: [roles.admin, roles.custom],
         allowedPlans: [plans.free, plans.growth, plans.enterprise],
       },
-      userReadBySuperadmin: {
-        id: 'userReadBySuperadmin',
+      userReadSuperadmin: {
+        id: 'userReadSuperadmin',
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
-      userUpdateBySuperadmin: {
-        id: 'userUpdateBySuperadmin',
+      userUpdateSuperadmin: {
+        id: 'userUpdateSuperadmin',
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
 
-      tenantReadBySuperadmin: {
-        id: 'tenantReadBySuperadmin',
+      tenantReadSuperadmin: {
+        id: 'tenantReadSuperadmin',
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
-      tenantCreateBySuperadmin: {
-        id: 'tenantCreateBySuperadmin',
+      tenantCreateSuperadmin: {
+        id: 'tenantCreateSuperadmin',
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
-      tenantDestroyBySuperadmin: {
-        id: 'tenantDestroyBySuperadmin',
+      tenantDestroySuperadmin: {
+        id: 'tenantDestroySuperadmin',
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
-      analyticsFetchBySuperadmin: {
-        id: 'analyticsFetchBySuperadmin',
+      analyticsFetchSuperadmin: {
+        id: 'analyticsFetchSuperadmin',
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
-      subscriptionCancelBySuperadmin: {
-        id: 'subscriptionCancelBySuperadmin',
+      subscriptionCancelSuperadmin: {
+        id: 'subscriptionCancelSuperadmin',
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
