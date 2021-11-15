@@ -52,7 +52,7 @@ export default function (sequelize, DataTypes) {
     models.settings.belongsTo(models.tenant, {
       as: 'tenant',
       foreignKey: {
-        allowNull: true,
+        allowNull: false,
       },
     });
 
