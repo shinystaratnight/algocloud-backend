@@ -186,4 +186,37 @@ export default class SuperadminService {
       this.options,
     );
   }
+
+  async getSettings() {
+    return SuperadminRepository.getSettings(
+      this.options,
+    );
+  }
+
+  async saveSettings(data) {
+    const transaction = await SequelizeRepository.createTransaction(
+      this.options.database,
+    );
+
+    try {
+      const settings = await SuperadminRepository.saveSettings(
+        data,
+        {
+          ...this.options,
+          transaction,
+        }
+      );
+
+      await SequelizeRepository.commitTransaction(
+        transaction,
+      );
+
+      return settings;
+    } catch (error) {
+      await SequelizeRepository.rollbackTransaction(
+        transaction,
+      );
+      throw error;
+    }
+  }
 }

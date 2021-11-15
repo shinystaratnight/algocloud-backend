@@ -276,6 +276,16 @@ class Permissions {
         allowedRoles: [roles.superadmin],
         allowedPlans: [],
       },
+      settingsReadSuperadmin: {
+        id: 'settingsReadSuperadmin',
+        allowedRoles: [roles.superadmin],
+        allowedPlans: [],
+      },
+      settingsEditSuperadmin: {
+        id: 'settingsEditSuperadmin',
+        allowedRoles: [roles.superadmin],
+        allowedPlans: [],
+      },
     };
   }
 

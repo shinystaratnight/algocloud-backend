@@ -64,6 +64,11 @@ export default function (sequelize, DataTypes) {
           len: [0, 255],
         }
       },
+      createdBySuperadmin: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      }
     },
     {
       indexes: [

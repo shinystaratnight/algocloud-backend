@@ -11,6 +11,7 @@ import UserRepository from './userRepository';
 import crypto from 'crypto';
 import Error401 from '../../errors/Error401';
 import { getConfig } from '../../config';
+import _get from 'lodash/get';
 
 const Op = Sequelize.Op;
 
@@ -130,6 +131,10 @@ export default class SuperadminRepository {
 
     let whereAnd: Array<any> = [];
     let include: any = [];
+
+    whereAnd.push({
+      ['createdBySuperadmin']: false,
+    });
 
     if (filter) {
       if (filter.id) {
@@ -385,20 +390,26 @@ export default class SuperadminRepository {
     );
 
     let whereAnd: Array<any> = [];
-    
-
     whereAnd.push({
       ['superadmin']: false,
     });
 
-    const where = { [Op.and]: whereAnd };
+    let where = { [Op.and]: whereAnd };
 
     const userCount = await options.database.user.count({
       where,
       transaction,
     });
 
+    whereAnd = [];
+    whereAnd.push({
+      ['createdBySuperadmin']: false,
+    });
+
+    where = { [Op.and]: whereAnd };
+
     const tenantCount = await options.database.tenant.count({
+      where,
       transaction,
     });
 
@@ -440,5 +451,93 @@ export default class SuperadminRepository {
     await stripe.subscriptions.update(planSubscriptionId, {cancel_at_period_end: true});
 
     return true;
+  }
+
+  static async getSettings(
+    options: IRepositoryOptions,
+  ) {
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    const currentUser = SequelizeRepository.getCurrentUser(
+      options,
+    );
+
+    const tenantUser = currentUser.tenants[0];
+    if (!tenantUser) {
+      throw new Error401();
+    }
+
+    const tenant = tenantUser.tenant;
+    if (!tenant) {
+      throw new Error401();
+    }
+
+    const settings = await options.database.settings.findByPk(
+      tenant.id,
+      {
+        transaction,
+      }
+    );
+
+    if (settings) {
+      return {
+        theme: settings.theme,
+      };
+    }
+    
+    return {
+      theme: 'default',
+    };
+  }
+
+  static async saveSettings(data, options: IRepositoryOptions) {
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    const currentUser = SequelizeRepository.getCurrentUser(
+      options,
+    );
+
+    const tenantUser = currentUser.tenants[0];
+    if (!tenantUser) {
+      throw new Error401();
+    }
+
+    const tenant = tenantUser.tenant;
+    if (!tenant) {
+      throw new Error401();
+    }
+
+    const [
+      settings,
+    ] = await options.database.settings.findOrCreate({
+      where: { id: tenant.id, createdById: currentUser.id },
+      defaults: {
+        ...data,
+        id: tenant.id,
+        tenantId: tenant.id,
+        createdById: currentUser.id,
+      },
+      transaction,
+    });
+
+    await settings.update(data, {
+      transaction,
+    });
+
+    await AuditLogRepository.log(
+      {
+        entityName: 'settings',
+        entityId: settings.id,
+        action: AuditLogRepository.UPDATE,
+        values: data,
+      },
+      options,
+    );
+
+    return settings;
   }
 }
