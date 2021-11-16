@@ -161,7 +161,7 @@ export default class UserCreator {
         return new EmailSender(
           EmailSender.TEMPLATES.INVITATION,
           {
-            tenant: this.options.currentTenant,
+            tenantName: this.options.currentTenant.name,
             link,
           },
         ).sendTo(emailToInvite.email);

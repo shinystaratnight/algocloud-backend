@@ -11,7 +11,7 @@ export default async (req, res, next) => {
     }
 
     new PermissionChecker(req).validateHas(
-      Permissions.values.tenantDestroyBySuperadmin,
+      Permissions.values.tenantDestroySuperadmin,
     );
 
     // In the case of the Tenant, specific permissions like tenantDestroy and tenantEdit are

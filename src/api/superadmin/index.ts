@@ -33,4 +33,14 @@ export default (app) => {
     `/superadmin/cancel-subscription`,
     require('./tenant/cancelSubscription').default,
   );
+
+  app.get(
+    `/superadmin/settings`,
+    require('./settings/settingsGet').default,
+  );
+
+  app.put(
+    `/superadmin/settings`,
+    require('./settings/settingsUpdate').default,
+  );
 };

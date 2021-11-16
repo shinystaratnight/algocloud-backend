@@ -11,7 +11,7 @@ export default async (req, res, next) => {
     }
 
     new PermissionChecker(req).validateHas(
-      Permissions.values.subscriptionCancelBySuperadmin,
+      Permissions.values.subscriptionCancelSuperadmin,
     );
 
     const payload = await new SuperadminService(req).cancelSubscription(

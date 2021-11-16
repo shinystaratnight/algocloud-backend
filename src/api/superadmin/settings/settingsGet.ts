@@ -6,14 +6,12 @@ import SuperadminService from '../../../services/superadminService';
 export default async (req, res) => {
   try {
     new PermissionChecker(req).validateHas(
-      Permissions.values.userUpdateSuperadmin,
+      Permissions.values.settingsReadSuperadmin,
     );
 
-    const superadminService = new SuperadminService(req);
-
-    await superadminService.updateUser(req.params.userId);
-
-    const payload = true;
+    const payload = await new SuperadminService(
+      req
+    ).getSettings();
 
     await ApiResponseHandler.success(req, res, payload);
   } catch (error) {

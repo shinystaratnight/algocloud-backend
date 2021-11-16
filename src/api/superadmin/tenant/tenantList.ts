@@ -6,7 +6,7 @@ import SuperadminService from '../../../services/superadminService';
 export default async (req, res) => {
   try {
     new PermissionChecker(req).validateHas(
-      Permissions.values.tenantReadBySuperadmin,
+      Permissions.values.tenantReadSuperadmin,
     );
 
     const payload = await new SuperadminService(

@@ -11,7 +11,7 @@ export default async (req, res, next) => {
     }
 
     new PermissionChecker(req).validateHas(
-      Permissions.values.tenantCreateBySuperadmin,
+      Permissions.values.tenantCreateSuperadmin,
     );
 
     const payload = await new SuperadminService(req).createTenant(

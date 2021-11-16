@@ -3,17 +3,15 @@ import ApiResponseHandler from '../../apiResponseHandler';
 import Permissions from '../../../security/permissions';
 import SuperadminService from '../../../services/superadminService';
 
-export default async (req, res) => {
+export default async (req, res, next) => {
   try {
     new PermissionChecker(req).validateHas(
-      Permissions.values.userUpdateSuperadmin,
+      Permissions.values.settingsEditSuperadmin,
     );
 
-    const superadminService = new SuperadminService(req);
-
-    await superadminService.updateUser(req.params.userId);
-
-    const payload = true;
+    const payload = await new SuperadminService(
+      req
+    ).saveSettings(req.body.settings);
 
     await ApiResponseHandler.success(req, res, payload);
   } catch (error) {
