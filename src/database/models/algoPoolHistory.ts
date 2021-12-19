@@ -22,21 +22,29 @@ export default function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      assetOneName: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-      },
       assetOneUnitName: {
         type: DataTypes.STRING(20),
+        allowNull: false,
+      },
+      assetTwoUnitName: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+      },
+      assetOneName: {
+        type: DataTypes.STRING(50),
         allowNull: false,
       },
       assetTwoName: {
         type: DataTypes.STRING(50),
         allowNull: false,
       },
-      assetTwoUnitName: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
+      assetOneReserves: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+      },
+      assetTwoReserves: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
       },
       liquidity: {
         type: DataTypes.DOUBLE,

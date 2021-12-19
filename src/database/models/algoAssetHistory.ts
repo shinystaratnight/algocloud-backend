@@ -22,6 +22,10 @@ export default function (sequelize, DataTypes) {
         type: DataTypes.DOUBLE,
         allowNull: true,
       },
+      price: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+      },
       lastDayPriceChange: {
         type: DataTypes.DOUBLE,
         allowNull: true,
