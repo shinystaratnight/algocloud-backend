@@ -72,6 +72,7 @@ require('./customer').default(routes);
 require('./product').default(routes);
 require('./order').default(routes);
 require('./superadmin').default(routes);
+require('./algorand').default(routes);
 
 // Loads the Tenant if the :tenantId param is passed
 routes.param('tenantId', tenantMiddleware);
