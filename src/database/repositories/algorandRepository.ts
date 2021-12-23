@@ -22,13 +22,20 @@ export default class AlgorandRepository {
   ) {
     const {sequelize} = options.database;
 
-    const from = moment(moment().startOf('week').toDate()).format('YYYY-MM-DD');
-    var to = moment(moment().endOf('week').toDate()).format('YYYY-MM-DD');
-    const statement = `select distinct on (date_trunc('day', "createdDate")) id, "totalLiquidity", "lastDayVolume", date("createdDate") as "createdDate"` +
+    const from = moment().subtract(365, 'days').format('YYYY-MM-DD');
+    const to = moment().format('YYYY-MM-DD');
+
+    const daily_statement = `select distinct on (date_trunc('day', "createdDate")) "totalLiquidity", "lastDayVolume", date("createdDate") as "createdDate"` +
       ` from "algoHistory" where date_trunc('day', "createdDate") in ` + 
       `(SELECT (generate_series('${from}', '${to}', '1 day'::interval))::DATE)`;
-    const history = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
-    return history;
+    const dailyData = await sequelize.query(daily_statement, { type: sequelize.QueryTypes.SELECT });
+
+    const weekly_statement = `select sum("lastDayVolume") as "lastWeekVolume", date(date_trunc('week', "createdDate"::date)) as "week" from "algoHistory" where id in ` +
+    `(select distinct on (date_trunc('day', "createdDate")) id from "algoHistory" where date_trunc('day', "createdDate") in ` +
+    `(select (generate_series('2020-12-20', '2021-12-23', '1 day'::interval))::date)) group by "week"`;
+    const weeklyData = await sequelize.query(weekly_statement, { type: sequelize.QueryTypes.SELECT });
+
+    return { dailyData, weeklyData };
   }
 
   
