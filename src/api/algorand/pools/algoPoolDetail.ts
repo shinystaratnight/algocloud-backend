@@ -11,7 +11,7 @@ export default async (req, res, next) => {
 
     const payload = await new AlgorandService(
       req,
-    ).getAlgoStatistcs();
+    ).getAlgoAssets();
 
     await ApiResponseHandler.success(req, res, payload);
   } catch (error) {

@@ -1,17 +1,5 @@
-import SequelizeRepository from '../database/repositories/sequelizeRepository';
 import { IServiceOptions } from './IServiceOptions';
 import AlgorandRepository from '../database/repositories/algorandRepository';
-import PermissionChecker from './user/permissionChecker';
-import Permissions from '../security/permissions';
-import TenantRepository from '../database/repositories/tenantRepository';
-import Plans from '../security/plans';
-import Error400 from '../errors/Error400';
-import SettingsService from './settingsService';
-import TenantUserRepository from '../database/repositories/tenantUserRepository';
-import Roles from '../security/roles';
-import { getConfig } from '../config';
-import EmailSender from './emailSender';
-import { tenantSubdomain } from './tenantSubdomain';
 
 export default class AlgorandService {
   options: IServiceOptions;
@@ -23,23 +11,49 @@ export default class AlgorandService {
     this.options = options;
   }
 
-  async getStats() {
+  async getAlgoStatistcs() {
     return AlgorandRepository.getStats(
       this.options,
     );
   }
 
-  async getPools(args) {
-    return AlgorandRepository.getPools(
-      args,
+  async getAlgoAssets() {
+    return AlgorandRepository.getAssets(
       this.options,
+    );
+  }
+  
+  async getAlgoPools() {
+    return AlgorandRepository.getPools(
+      this.options,
+    );
+  }
+  
+  async getAlgoAssetDetail(assetId) {
+    return AlgorandRepository.getAssetDetail(
+      this.options,
+      assetId,
     );
   }
 
-  async getAssets(args) {
-    return AlgorandRepository.getAssets(
-      args,
-      this.options,
-    );
-  }
+  // async getAlgoAssetVolumeLiquidity(assetId) {
+  //   return AlgorandRepository.getAssetVolumeLiquidity(
+  //     this.options,
+  //     assetId,
+  //   );
+  // }
+
+  // async getAlgoAssetDailyPrice(assetId) {
+  //   return AlgorandRepository.getAssetDailyPrice(
+  //     this.options,
+  //     assetId,
+  //   );
+  // }
+
+  // async getAlgoAssetHourlyPrice(assetId) {
+  //   return AlgorandRepository.getAssetHourlyPrice(
+  //     this.options,
+  //     assetId,
+  //   );
+  // }
 }

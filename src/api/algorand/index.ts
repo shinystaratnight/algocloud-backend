@@ -3,4 +3,24 @@ export default (app) => {
     `/tenant/:tenantId/algorand/general-stats`,
     require('./algostats/algoStatistics').default,
   );
+
+  app.get(
+    `/tenant/:tenantId/algorand/assets`,
+    require('./assets/algoAssets').default,
+  );
+
+  app.get(
+    `/tenant/:tenantId/algorand/pools`,
+    require('./pools/algoPools').default,
+  );
+
+  app.get(
+    `/tenant/:tenantId/algorand/asset/:assetId`,
+    require('./assets/algoAssetDetail').default,
+  );
+
+  app.get(
+    `/tenant/:tenantId/algorand/pool/:poolId`,
+    require('./pools/algoPoolDetail').default,
+  );
 };
