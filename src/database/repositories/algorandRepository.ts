@@ -2,6 +2,7 @@ import Sequelize from 'sequelize';
 import { IRepositoryOptions } from './IRepositoryOptions';
 import _ from 'lodash';
 import moment from 'moment';
+import SequelizeRepository from './sequelizeRepository';
 
 
 const makeOHLC = (arr) => {
@@ -55,10 +56,11 @@ const makePairRates = (arr) => {
 
 export default class AlgorandRepository {
 
-  static async getStats(
+  static async getStatistics(
     options: IRepositoryOptions,
   ) {
     const {sequelize} = options.database;
+    const currentUser = options.currentUser;
 
     const from = moment().subtract(365, 'days').format('YYYY-MM-DD');
     const to = moment().format('YYYY-MM-DD');
@@ -81,16 +83,36 @@ export default class AlgorandRepository {
       `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) limit 10;`;
     const topPools = await sequelize.query(top_pools_statement, { type: sequelize.QueryTypes.SELECT });
 
-    const topFavorites = [];
-
-    return { dailyData, weeklyData, topFavorites, topAssets, topPools };
+    return { dailyData, weeklyData, topAssets, topPools };
   }
 
+  static async getFavorites(
+    options: IRepositoryOptions,
+  ) {
+    const {sequelize} = options.database;
+    const currentUser = options.currentUser;
+
+    const fav_statement = `select array_agg("assetId") as "assets" from "algoFavorites" where "userId"='${currentUser.id}'`;
+    const favResult = await sequelize.query(fav_statement, { type: sequelize.QueryTypes.SELECT });
+    const list = favResult[0].assets ?? [];
+
+    const top_fav_statement = `select *,  1 as "status" from "algoAssetHistory" where (id >= (select id from "algoAssetHistory" where "unitName"='ALGO'` +
+      `order by "createdDate" desc limit 1)) and ("assetId" in (select "assetId" from "algoFavorites" where "userId"='${currentUser.id}'))` +
+      `limit 5`;
+    const top = await sequelize.query(top_fav_statement, { type: sequelize.QueryTypes.SELECT });
+
+    return { list, top };
+  }
   
   static async getAssets(
     options: IRepositoryOptions,
   ) {
     const {sequelize} = options.database;
+    const currentUser = options.currentUser;
+
+    const fav_statement = `select array_agg("assetId") as "assets" from "algoFavorites" where "userId"='${currentUser.id}'`;
+    const favResult = await sequelize.query(fav_statement, { type: sequelize.QueryTypes.SELECT });
+    const favorites = favResult[0].assets ?? [];
 
     const statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
       order by "createdDate" desc limit 1)`;
@@ -229,5 +251,55 @@ export default class AlgorandRepository {
     });
     
     return { dailyPoolData, dailyOneRates, dailyTwoRates, hourlyOneRates, hourlyTwoRates };
-  } 
+  }
+
+  static async toggleFavorite(
+    options: IRepositoryOptions,
+    assetId,
+  ) {
+    const {sequelize} = options.database;
+    const currentUser = options.currentUser;
+
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    const record = await options.database.algoFavorite.findOne(
+      {
+        where: {
+          assetId,
+          userId: currentUser.id,
+        },
+        transaction,
+      },
+    );
+
+    if (!record) {
+      await options.database.algoFavorite.create(
+        {
+          assetId,
+          userId: currentUser.id,
+        },
+        {
+          transaction,
+        }
+      )
+    }
+    else {
+      await record.destroy({
+        transaction,
+      });
+    }
+
+    const fav_statement = `select array_agg("assetId") as "assets" from "algoFavorites" where "userId"='${currentUser.id}'`;
+    const favResult = await sequelize.query(fav_statement, { type: sequelize.QueryTypes.SELECT });
+    const list = favResult[0].assets ?? [];
+
+    const top_fav_statement = `select *,  1 as "status" from "algoAssetHistory" where (id >= (select id from "algoAssetHistory" where "unitName"='ALGO'` +
+      `order by "createdDate" desc limit 1)) and ("assetId" in (select "assetId" from "algoFavorites" where "userId"='${currentUser.id}'))` +
+      `limit 5`;
+    const top = await sequelize.query(top_fav_statement, { type: sequelize.QueryTypes.SELECT });
+
+    return { list, top };
+  }
 }

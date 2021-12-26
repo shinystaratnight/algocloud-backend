@@ -12,7 +12,13 @@ export default class AlgorandService {
   }
 
   async getAlgoStatistcs() {
-    return AlgorandRepository.getStats(
+    return AlgorandRepository.getStatistics(
+      this.options,
+    );
+  }
+
+  async getAlgoFavorites() {
+    return AlgorandRepository.getFavorites(
       this.options,
     );
   }
@@ -40,6 +46,13 @@ export default class AlgorandService {
     return AlgorandRepository.getPoolDetail(
       this.options,
       address,
+    );
+  }
+
+  async toggleAlgoFavorite(assetId) {
+    return AlgorandRepository.toggleFavorite(
+      this.options,
+      assetId,
     );
   }
 }
