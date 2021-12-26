@@ -20,7 +20,7 @@ export default (app) => {
   );
 
   app.get(
-    `/tenant/:tenantId/algorand/pool/:poolId`,
+    `/tenant/:tenantId/algorand/pool/:address`,
     require('./pools/algoPoolDetail').default,
   );
 };

@@ -9,8 +9,6 @@ export default async (req, res, next) => {
       Permissions.values.algorandRead,
     );
 
-    console.log(req.params.assetId);
-
     const payload = await new AlgorandService(req).getAlgoAssetDetail(
       req.params.assetId,
     );

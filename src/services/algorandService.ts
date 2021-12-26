@@ -36,24 +36,10 @@ export default class AlgorandService {
     );
   }
 
-  // async getAlgoAssetVolumeLiquidity(assetId) {
-  //   return AlgorandRepository.getAssetVolumeLiquidity(
-  //     this.options,
-  //     assetId,
-  //   );
-  // }
-
-  // async getAlgoAssetDailyPrice(assetId) {
-  //   return AlgorandRepository.getAssetDailyPrice(
-  //     this.options,
-  //     assetId,
-  //   );
-  // }
-
-  // async getAlgoAssetHourlyPrice(assetId) {
-  //   return AlgorandRepository.getAssetHourlyPrice(
-  //     this.options,
-  //     assetId,
-  //   );
-  // }
+  async getAlgoPoolDetail(address) {
+    return AlgorandRepository.getPoolDetail(
+      this.options,
+      address,
+    );
+  }
 }
