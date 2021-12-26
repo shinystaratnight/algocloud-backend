@@ -76,11 +76,11 @@ export default class AlgorandRepository {
     const weeklyData = await sequelize.query(weekly_stats_statement, { type: sequelize.QueryTypes.SELECT });
 
     const top_assets_statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
-      order by "createdDate" desc limit 1) limit 10;`;
+      order by "createdDate" desc limit 1) order by id limit 10;`;
     const topAssets = await sequelize.query(top_assets_statement, { type: sequelize.QueryTypes.SELECT });
 
     const top_pools_statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where ` +
-      `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) limit 10;`;
+      `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by id limit 10;`;
     const topPools = await sequelize.query(top_pools_statement, { type: sequelize.QueryTypes.SELECT });
 
     return { dailyData, weeklyData, topAssets, topPools };
@@ -97,8 +97,8 @@ export default class AlgorandRepository {
     const list = favResult[0].assets ?? [];
 
     const top_fav_statement = `select *,  1 as "status" from "algoAssetHistory" where (id >= (select id from "algoAssetHistory" where "unitName"='ALGO'` +
-      `order by "createdDate" desc limit 1)) and ("assetId" in (select "assetId" from "algoFavorites" where "userId"='${currentUser.id}'))` +
-      `limit 5`;
+      `order by "createdDate" desc limit 1)) and ("assetId" in (select "assetId" from "algoFavorites" where "userId"='${currentUser.id}'))`;
+      // `limit 5`;
     const top = await sequelize.query(top_fav_statement, { type: sequelize.QueryTypes.SELECT });
 
     return { list, top };
@@ -108,14 +108,9 @@ export default class AlgorandRepository {
     options: IRepositoryOptions,
   ) {
     const {sequelize} = options.database;
-    const currentUser = options.currentUser;
 
-    const fav_statement = `select array_agg("assetId") as "assets" from "algoFavorites" where "userId"='${currentUser.id}'`;
-    const favResult = await sequelize.query(fav_statement, { type: sequelize.QueryTypes.SELECT });
-    const favorites = favResult[0].assets ?? [];
-
-    const statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
-      order by "createdDate" desc limit 1)`;
+    const statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` +
+      `order by "createdDate" desc limit 1) order by id`;
     const assets = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
 
     return { assets };
@@ -128,7 +123,7 @@ export default class AlgorandRepository {
     const {sequelize} = options.database;
 
     const statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where ` +
-      `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1)`;
+      `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by id`;
     const pools = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
 
     return { pools };
@@ -296,8 +291,8 @@ export default class AlgorandRepository {
     const list = favResult[0].assets ?? [];
 
     const top_fav_statement = `select *,  1 as "status" from "algoAssetHistory" where (id >= (select id from "algoAssetHistory" where "unitName"='ALGO'` +
-      `order by "createdDate" desc limit 1)) and ("assetId" in (select "assetId" from "algoFavorites" where "userId"='${currentUser.id}'))` +
-      `limit 5`;
+      `order by "createdDate" desc limit 1)) and ("assetId" in (select "assetId" from "algoFavorites" where "userId"='${currentUser.id}'))`;
+      // `limit 5`;
     const top = await sequelize.query(top_fav_statement, { type: sequelize.QueryTypes.SELECT });
 
     return { list, top };
