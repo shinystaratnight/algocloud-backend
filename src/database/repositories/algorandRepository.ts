@@ -189,24 +189,19 @@ export default class AlgorandRepository {
       `in (SELECT (generate_series('${startDateTime}', '${endDateTime}', '1 day'::interval))) group by "date"`;
     const dailyRatesResult = await sequelize.query(daily_statement, { type: sequelize.QueryTypes.SELECT });
 
-    let oneDailyRates: any[] = [];
-    let twoDailyRates: any[] = [];
+    let dailyOneRates: any[] = [];
+    let dailyTwoRates: any[] = [];
     dailyRatesResult.map(pool => {
       const [oneReserves, twoReserves] = makePairRates(pool.reservePairs);
-      oneDailyRates.push({
+      dailyOneRates.push({
         'timestamp': pool.date,
         ...oneReserves
       });
-      twoDailyRates.push({
+      dailyTwoRates.push({
         'timestamp': pool.date,
         ...twoReserves
       });
     });
-
-    const dailyRates = {
-      'rateOne': oneDailyRates,
-      'rateTwo': twoDailyRates,
-    }
 
     const hourly_statement = `select extract(epoch from date_trunc('hour', "createdDate")) as "date", ` +
       `array_agg("assetOneReserves" || ',' || "assetTwoReserves") as "reservePairs" ` +
@@ -214,25 +209,20 @@ export default class AlgorandRepository {
       `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))) group by "date"`;
     const hourlyRatesResult = await sequelize.query(hourly_statement, { type: sequelize.QueryTypes.SELECT });
 
-    let oneHourlyRates: any[] = [];
-    let twoHourlyRates: any[] = [];
+    let hourlyOneRates: any[] = [];
+    let hourlyTwoRates: any[] = [];
     hourlyRatesResult.map(pool => {
       const [oneReserves, twoReserves] = makePairRates(pool.reservePairs);
-      oneHourlyRates.push({
+      hourlyOneRates.push({
         'timestamp': pool.date,
         ...oneReserves
       });
-      twoHourlyRates.push({
+      hourlyTwoRates.push({
         'timestamp': pool.date,
         ...twoReserves
       });
     });
-
-    const hourlyRates = {
-      'rateOne': oneHourlyRates,
-      'rateTwo': twoHourlyRates,
-    }
     
-    return { dailyPoolData, dailyRates, hourlyRates };
+    return { dailyPoolData, dailyOneRates, dailyTwoRates, hourlyOneRates, hourlyTwoRates };
   } 
 }
