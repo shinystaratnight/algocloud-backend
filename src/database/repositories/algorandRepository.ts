@@ -75,15 +75,15 @@ export default class AlgorandRepository {
 
     const top_assets_statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
       order by "createdDate" desc limit 1) limit 10;`;
-    const assets = await sequelize.query(top_assets_statement, { type: sequelize.QueryTypes.SELECT });
+    const topAssets = await sequelize.query(top_assets_statement, { type: sequelize.QueryTypes.SELECT });
 
     const top_pools_statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where ` +
       `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) limit 10;`;
-    const pools = await sequelize.query(top_pools_statement, { type: sequelize.QueryTypes.SELECT });
+    const topPools = await sequelize.query(top_pools_statement, { type: sequelize.QueryTypes.SELECT });
 
     const topFavorites = [];
 
-    return { dailyData, weeklyData, topFavorites, assets, pools };
+    return { dailyData, weeklyData, topFavorites, topAssets, topPools };
   }
 
   
@@ -161,7 +161,12 @@ export default class AlgorandRepository {
       });
     });
 
-    return { dailyAssetData, dailyPrices, hourlyPrices };
+    const pools_statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where` +
+      `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) and ` +
+      `("assetOneId" = '${assetId}' or "assetTwoId"='${assetId}') limit 10`;
+    const topPools = await sequelize.query(pools_statement, { type: sequelize.QueryTypes.SELECT });
+
+    return { dailyAssetData, dailyPrices, hourlyPrices, topPools };
   }
 
 
