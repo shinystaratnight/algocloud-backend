@@ -60,7 +60,6 @@ export default class AlgorandRepository {
     options: IRepositoryOptions,
   ) {
     const {sequelize} = options.database;
-    const currentUser = options.currentUser;
 
     const from = moment().subtract(365, 'days').format('YYYY-MM-DD');
     const to = moment().format('YYYY-MM-DD');
@@ -72,7 +71,7 @@ export default class AlgorandRepository {
 
     const weekly_stats_statement = `select sum("lastDayVolume") as "lastWeekVolume", date(date_trunc('week', "createdDate"::date)) as "week" ` +
       `from "algoHistory" where id in (select distinct on (date_trunc('day', "createdDate")) id from "algoHistory" ` +
-      `where date_trunc('day', "createdDate") in (select (generate_series('${from}', '${to}', '1 day'::interval))::date)) group by "week"`;
+      `where date_trunc('day', "createdDate") in (select (generate_series('${from}', '${to}', '1 day'::interval))::date)) group by "week" order by "week"`;
     const weeklyData = await sequelize.query(weekly_stats_statement, { type: sequelize.QueryTypes.SELECT });
 
     const top_assets_statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
@@ -113,7 +112,7 @@ export default class AlgorandRepository {
       `order by "createdDate" desc limit 1) order by id`;
     const assets = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
 
-    return { assets };
+    return { list: assets };
   }
 
 
@@ -126,7 +125,7 @@ export default class AlgorandRepository {
       `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by id`;
     const pools = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
 
-    return { pools };
+    return { list: pools };
   }
 
 
@@ -183,7 +182,10 @@ export default class AlgorandRepository {
       `("assetOneId" = '${assetId}' or "assetTwoId"='${assetId}') limit 10`;
     const topPools = await sequelize.query(pools_statement, { type: sequelize.QueryTypes.SELECT });
 
-    return { dailyAssetData, dailyPrices, hourlyPrices, topPools };
+    const detail_statement = `select * from "algoAssetHistory" where "assetId"='${assetId}' order by "createdDate" desc limit 1`;
+    const detailResult = await sequelize.query(detail_statement, { type: sequelize.QueryTypes.SELECT });
+
+    return { show: detailResult[0], dailyAssetData, dailyPrices, hourlyPrices, topPools };
   }
 
 
@@ -244,8 +246,11 @@ export default class AlgorandRepository {
         ...twoReserves
       });
     });
+
+    const detail_statement = `select * from "algoPoolHistory" where "address"='${address}' order by "createdDate" desc limit 1`;
+    const detailResult = await sequelize.query(detail_statement, { type: sequelize.QueryTypes.SELECT });
     
-    return { dailyPoolData, dailyOneRates, dailyTwoRates, hourlyOneRates, hourlyTwoRates };
+    return { show: detailResult[0], dailyPoolData, dailyOneRates, dailyTwoRates, hourlyOneRates, hourlyTwoRates };
   }
 
   static async toggleFavorite(
