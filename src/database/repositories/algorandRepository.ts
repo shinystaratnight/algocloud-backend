@@ -182,7 +182,7 @@ export default class AlgorandRepository {
       `("assetOneId" = '${assetId}' or "assetTwoId"='${assetId}') limit 10`;
     const topPools = await sequelize.query(pools_statement, { type: sequelize.QueryTypes.SELECT });
 
-    const detail_statement = `select "name", "unitName", "price" from "algoAssetHistory" where "assetId"='${assetId}' ` +
+    const detail_statement = `select * from "algoAssetHistory" where "assetId"='${assetId}' ` +
       `order by "createdDate" desc limit 1`;
     const detailResult = await sequelize.query(detail_statement, { type: sequelize.QueryTypes.SELECT });
 
@@ -248,8 +248,7 @@ export default class AlgorandRepository {
       });
     });
 
-    const detail_statement = `select "assetOneUnitName", "assetTwoUnitName" from "algoPoolHistory" where "address"='${address}' ` +
-      `order by "createdDate" desc limit 1`;
+    const detail_statement = `select * from "algoPoolHistory" where "address"='${address}' order by "createdDate" desc limit 1`;
     const detailResult = await sequelize.query(detail_statement, { type: sequelize.QueryTypes.SELECT });
     
     return { show: detailResult[0], dailyPoolData, dailyOneRates, dailyTwoRates, hourlyOneRates, hourlyTwoRates };
