@@ -140,6 +140,10 @@ export default function (sequelize, DataTypes) {
       as: 'tenants',
     });
 
+    models.user.hasMany(models.algoFavorite, {
+      as: 'algoFavorites',
+    });
+
     models.user.hasMany(models.file, {
       as: { singular: 'avatar', plural: 'avatars' },
       foreignKey: 'belongsToId',
