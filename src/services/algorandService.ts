@@ -17,6 +17,19 @@ export default class AlgorandService {
     );
   }
 
+  async getAlgoShowcase() {
+    return AlgorandRepository.getShowcase(
+      this.options,
+    );
+  }
+
+  async setAlgoShowcase(assetId) {
+    return AlgorandRepository.setShowcase(
+      this.options,
+      assetId,
+    );
+  }
+
   async getAlgoFavorites() {
     return AlgorandRepository.getFavorites(
       this.options,

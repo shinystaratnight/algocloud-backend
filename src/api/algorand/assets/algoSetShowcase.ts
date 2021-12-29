@@ -6,10 +6,10 @@ import AlgorandService from '../../../services/algorandService';
 export default async (req, res, next) => {
   try {
     new PermissionChecker(req).validateHas(
-      Permissions.values.algorandFavoriteToggle,
+      Permissions.values.algorandRead,
     );
 
-    const payload = await new AlgorandService(req).toggleAlgoFavorite(
+    const payload = await new AlgorandService(req).setAlgoShowcase(
       req.params.assetId,
     );
 

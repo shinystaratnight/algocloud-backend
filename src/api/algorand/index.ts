@@ -5,6 +5,11 @@ export default (app) => {
   );
 
   app.get(
+    `/tenant/:tenantId/algorand/showcase`,
+    require('./assets/algoShowcase').default,
+  );
+
+  app.get(
     `/tenant/:tenantId/algorand/favorites`,
     require('./favorites/algoFavorites').default,
   );
@@ -32,5 +37,10 @@ export default (app) => {
   app.put(
     `/tenant/:tenantId/algorand/favorite/:assetId/toggle`,
     require('./favorites/algoToggleFavorite').default,
+  );
+
+  app.put(
+    `/tenant/:tenantId/algorand/:assetId/set-showcase`,
+    require('./assets/algoSetShowcase').default,
   );
 };
