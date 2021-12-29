@@ -6,7 +6,7 @@ import SequelizeRepository from './sequelizeRepository';
 
 
 const makeOHLC = (arr) => {
-  const sortedArr = _.sortBy(arr);
+  const sortedArr = _.sortBy(_.chain(arr).map((v) => v || 0).value());
   if (sortedArr.length === 1) return ({
     'open': sortedArr[0],
     'close': sortedArr[0],
