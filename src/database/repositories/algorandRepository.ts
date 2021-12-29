@@ -85,6 +85,96 @@ export default class AlgorandRepository {
     return { dailyData, weeklyData, topAssets, topPools };
   }
 
+
+  static async getShowcase(
+    options: IRepositoryOptions,
+  ) {
+    const {sequelize} = options.database;
+    const currentUser = options.currentUser;
+
+    const ALGO_VALUE = 0;
+
+    const showcase_statement = `select "assetId" from "algoShowcases" where "userId"='${currentUser.id}'`;
+    const result = await sequelize.query(showcase_statement, { type: sequelize.QueryTypes.SELECT });
+    const assetId = result.length > 0 ? result[0].assetId : ALGO_VALUE;
+
+    const showcase_name_statement = `select "name", "unitName" from "algoAssetHistory" where "assetId"='${assetId}' order by "createdDate" desc`;
+    const showcaseNameResult = await sequelize.query(showcase_name_statement, { type: sequelize.QueryTypes.SELECT });
+    const showcaseName = showcaseNameResult.length > 0 ? showcaseNameResult[0].unitName : '';
+
+    const startDate = moment().subtract(365, 'days').format('YYYY-MM-DD');
+    const endDate = moment().format('YYYY-MM-DD');
+
+    const statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
+      `extract(epoch from date_trunc('day', "createdDate")) as "date" ` + 
+      `from "algoAssetHistory" where "assetId"='${assetId}' and date_trunc('day', "createdDate") ` +
+      `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))::DATE);`
+    const showcaseData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
+    const top_assets_statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
+      order by "createdDate" desc limit 1) order by id limit 10;`;
+    const topAssets = await sequelize.query(top_assets_statement, { type: sequelize.QueryTypes.SELECT });
+
+    const top_pools_statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where ` +
+      `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by id limit 10;`;
+    const topPools = await sequelize.query(top_pools_statement, { type: sequelize.QueryTypes.SELECT });
+
+    return { showcaseData, showcaseId: assetId, showcaseName, topAssets, topPools };
+  }
+
+  static async setShowcase(
+    options: IRepositoryOptions,
+    assetId,
+  ) {
+    const {sequelize} = options.database;
+    const currentUser = options.currentUser;
+
+    const transaction = SequelizeRepository.getTransaction(
+      options,
+    );
+
+    const record = await options.database.algoShowcase.findOne(
+      {
+        where: {
+          userId: currentUser.id,
+        },
+        transaction,
+      },
+    );
+
+    if (record) {
+      await record.destroy({
+        transaction,
+      });
+    }
+    
+    await options.database.algoShowcase.create(
+      {
+        assetId,
+        userId: currentUser.id,
+      },
+      {
+        transaction,
+      }
+    );
+
+
+    const showcase_name_statement = `select "name", "unitName" from "algoAssetHistory" where "assetId"='${assetId}' order by "createdDate" desc`;
+    const showcaseNameResult = await sequelize.query(showcase_name_statement, { type: sequelize.QueryTypes.SELECT });
+    const showcaseName = showcaseNameResult.length > 0 ? showcaseNameResult[0].unitName : '';
+
+    const startDate = moment().subtract(365, 'days').format('YYYY-MM-DD');
+    const endDate = moment().format('YYYY-MM-DD');
+
+    const statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
+      `extract(epoch from date_trunc('day', "createdDate")) as "date" ` + 
+      `from "algoAssetHistory" where "assetId"='${assetId}' and date_trunc('day', "createdDate") ` +
+      `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))::DATE);`
+    const showcaseData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
+    return { showcaseId: assetId, showcaseName, showcaseData };
+  }
+
   static async getFavorites(
     options: IRepositoryOptions,
   ) {
