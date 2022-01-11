@@ -1,4 +1,3 @@
-import Sequelize from 'sequelize';
 import { IRepositoryOptions } from './IRepositoryOptions';
 import _ from 'lodash';
 import moment from 'moment';
@@ -83,6 +82,67 @@ export default class AlgorandRepository {
     const topPools = await sequelize.query(top_pools_statement, { type: sequelize.QueryTypes.SELECT });
 
     return { dailyData, weeklyData, topAssets, topPools };
+  }
+
+
+  static async getOverview(
+    options: IRepositoryOptions,
+  ) {
+    const {sequelize} = options.database;
+    const currentUser = options.currentUser;
+    
+    const ALGO_VALUE = 0;
+    
+    const from = moment().subtract(365, 'days').format('YYYY-MM-DD');
+    const to = moment().format('YYYY-MM-DD');
+    
+    const pageSize = 100;
+    const assetOffset = 0;
+    const poolOffset = 0;
+
+    // statement = `select distinct on (date_trunc('day', "createdDate")) "totalLiquidity", "lastDayVolume", ` +
+    //   `date("createdDate") as "createdDate" from "algoHistory" where date_trunc('day', "createdDate") in ` + 
+    //   `(SELECT (generate_series('${from}', '${to}', '1 day'::interval))::DATE)`;
+    // const dailyData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
+    // statement = `select sum("lastDayVolume") as "lastWeekVolume", date(date_trunc('week', "createdDate"::date)) as "week" ` +
+    //   `from "algoHistory" where id in (select distinct on (date_trunc('day', "createdDate")) id from "algoHistory" ` +
+    //   `where date_trunc('day', "createdDate") in (select (generate_series('${from}', '${to}', '1 day'::interval))::date)) group by "week" order by "week"`;
+    // const weeklyData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
+    let statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
+      order by "createdDate" desc limit 1) order by id limit ${pageSize} offset ${assetOffset}`;
+    const assets = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
+    statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where "assetOneUnitName"='USDC' and ` +
+      `"assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by id limit ${pageSize} offset ${poolOffset}`;
+    const pools = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
+    statement = `select * from "algoAssetHistory" where (id >= (select id from "algoAssetHistory" where "unitName"='ALGO'` +
+      `order by "createdDate" desc limit 1)) and ("assetId" in (select "assetId" from "algoFavorites" where "userId"='${currentUser.id}'))`;
+    const favorites = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
+    statement = `select "assetId" from "algoShowcases" where "userId"='${currentUser.id}'`;
+    let result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+    const showcaseAssetId = result.length > 0 ? result[0].assetId : ALGO_VALUE;
+
+    statement = `select * from "algoAssetHistory" where "assetId"='${showcaseAssetId}' order by "createdDate" desc`;
+    result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+    const showcase = result[0];
+
+    statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
+      `extract(epoch from date_trunc('day', "createdDate")) as "date" ` + 
+      `from "algoAssetHistory" where "assetId"='${showcaseAssetId}' and date_trunc('day', "createdDate") ` +
+      `in (SELECT (generate_series('${from}', '${to}', '1 day'::interval))::DATE);`
+    const dailyData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
+    return {
+      dailyData,
+      favorites,
+      assets,
+      pools,
+      showcase,
+    };
   }
 
 
