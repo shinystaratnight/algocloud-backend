@@ -9,9 +9,9 @@ export default async (req, res, next) => {
       Permissions.values.algorandRead,
     );
 
-    const payload = await new AlgorandService(
-      req,
-    ).getAlgoOverview();
+    const payload = await new AlgorandService(req).getAlgoOverview(
+      req.query,
+    );
 
     await ApiResponseHandler.success(req, res, payload);
   } catch (error) {

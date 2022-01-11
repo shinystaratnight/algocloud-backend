@@ -17,9 +17,10 @@ export default class AlgorandService {
     );
   }
 
-  async getAlgoOverview() {
+  async getAlgoOverview(filter) {
     return AlgorandRepository.getOverview(
       this.options,
+      filter,
     );
   }
 
