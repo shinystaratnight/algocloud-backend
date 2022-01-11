@@ -2,17 +2,17 @@ export default (app) => {
   
   app.get(
     `/tenant/:tenantId/algorand/overview`,
-    require('./overview/algoOverview').default,
+    require('./algorandOverview').default,
   );
 
-  app.get(
-    `/tenant/:tenantId/algorand/general-stats`,
-    require('./algostats/algoStatistics').default,
+  app.put(
+    `/tenant/:tenantId/algorand/favorite/:assetId`,
+    require('./algorandFavorite').default,
   );
 
-  app.get(
-    `/tenant/:tenantId/algorand/showcase`,
-    require('./assets/algoShowcase').default,
+  app.put(
+    `/tenant/:tenantId/algorand/showcase/:assetId`,
+    require('./algorandShowcase').default,
   );
 
   app.get(
@@ -38,15 +38,5 @@ export default (app) => {
   app.get(
     `/tenant/:tenantId/algorand/pool/:address`,
     require('./pools/algoPoolDetail').default,
-  );
-
-  app.put(
-    `/tenant/:tenantId/algorand/favorite/:assetId/toggle`,
-    require('./favorites/algoToggleFavorite').default,
-  );
-
-  app.put(
-    `/tenant/:tenantId/algorand/:assetId/set-showcase`,
-    require('./assets/algoSetShowcase').default,
   );
 };

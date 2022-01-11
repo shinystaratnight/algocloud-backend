@@ -11,12 +11,6 @@ export default class AlgorandService {
     this.options = options;
   }
 
-  async getAlgoStatistcs() {
-    return AlgorandRepository.getStatistics(
-      this.options,
-    );
-  }
-
   async getAlgoOverview(filter) {
     return AlgorandRepository.getOverview(
       this.options,
@@ -24,14 +18,15 @@ export default class AlgorandService {
     );
   }
 
-  async getAlgoShowcase() {
-    return AlgorandRepository.getShowcase(
+  async putAlgoFavorite(assetId) {
+    return AlgorandRepository.putFavorite(
       this.options,
+      assetId,
     );
   }
 
-  async setAlgoShowcase(assetId) {
-    return AlgorandRepository.setShowcase(
+  async putAlgoShowcase(assetId) {
+    return AlgorandRepository.putShowcase(
       this.options,
       assetId,
     );
@@ -66,13 +61,6 @@ export default class AlgorandService {
     return AlgorandRepository.getPoolDetail(
       this.options,
       address,
-    );
-  }
-
-  async toggleAlgoFavorite(assetId) {
-    return AlgorandRepository.toggleFavorite(
-      this.options,
-      assetId,
     );
   }
 }

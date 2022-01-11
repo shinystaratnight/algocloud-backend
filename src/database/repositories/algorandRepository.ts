@@ -55,34 +55,34 @@ const makePairRates = (arr) => {
 
 export default class AlgorandRepository {
 
-  static async getStatistics(
-    options: IRepositoryOptions,
-  ) {
-    const {sequelize} = options.database;
+  // static async getStatistics(
+  //   options: IRepositoryOptions,
+  // ) {
+  //   const {sequelize} = options.database;
 
-    const from = moment().subtract(365, 'days').format('YYYY-MM-DD');
-    const to = moment().format('YYYY-MM-DD');
+  //   const from = moment().subtract(365, 'days').format('YYYY-MM-DD');
+  //   const to = moment().format('YYYY-MM-DD');
 
-    const daily_stats_statement = `select distinct on (date_trunc('day', "createdDate")) "totalLiquidity", "lastDayVolume", ` +
-      `date("createdDate") as "createdDate" from "algoHistory" where date_trunc('day', "createdDate") in ` + 
-      `(SELECT (generate_series('${from}', '${to}', '1 day'::interval))::DATE)`;
-    const dailyData = await sequelize.query(daily_stats_statement, { type: sequelize.QueryTypes.SELECT });
+  //   const daily_stats_statement = `select distinct on (date_trunc('day', "createdDate")) "totalLiquidity", "lastDayVolume", ` +
+  //     `date("createdDate") as "createdDate" from "algoHistory" where date_trunc('day', "createdDate") in ` + 
+  //     `(SELECT (generate_series('${from}', '${to}', '1 day'::interval))::DATE)`;
+  //   const dailyData = await sequelize.query(daily_stats_statement, { type: sequelize.QueryTypes.SELECT });
 
-    const weekly_stats_statement = `select sum("lastDayVolume") as "lastWeekVolume", date(date_trunc('week', "createdDate"::date)) as "week" ` +
-      `from "algoHistory" where id in (select distinct on (date_trunc('day', "createdDate")) id from "algoHistory" ` +
-      `where date_trunc('day', "createdDate") in (select (generate_series('${from}', '${to}', '1 day'::interval))::date)) group by "week" order by "week"`;
-    const weeklyData = await sequelize.query(weekly_stats_statement, { type: sequelize.QueryTypes.SELECT });
+  //   const weekly_stats_statement = `select sum("lastDayVolume") as "lastWeekVolume", date(date_trunc('week', "createdDate"::date)) as "week" ` +
+  //     `from "algoHistory" where id in (select distinct on (date_trunc('day', "createdDate")) id from "algoHistory" ` +
+  //     `where date_trunc('day', "createdDate") in (select (generate_series('${from}', '${to}', '1 day'::interval))::date)) group by "week" order by "week"`;
+  //   const weeklyData = await sequelize.query(weekly_stats_statement, { type: sequelize.QueryTypes.SELECT });
 
-    const top_assets_statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
-      order by "createdDate" desc limit 1) order by id limit 10;`;
-    const topAssets = await sequelize.query(top_assets_statement, { type: sequelize.QueryTypes.SELECT });
+  //   const top_assets_statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
+  //     order by "createdDate" desc limit 1) order by id limit 10;`;
+  //   const topAssets = await sequelize.query(top_assets_statement, { type: sequelize.QueryTypes.SELECT });
 
-    const top_pools_statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where ` +
-      `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by id limit 10;`;
-    const topPools = await sequelize.query(top_pools_statement, { type: sequelize.QueryTypes.SELECT });
+  //   const top_pools_statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where ` +
+  //     `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by id limit 10;`;
+  //   const topPools = await sequelize.query(top_pools_statement, { type: sequelize.QueryTypes.SELECT });
 
-    return { dailyData, weeklyData, topAssets, topPools };
-  }
+  //   return { dailyData, weeklyData, topAssets, topPools };
+  // }
 
 
   static async getOverview(
@@ -164,52 +164,49 @@ export default class AlgorandRepository {
     };
   }
 
-  static async getShowcase(
-    options: IRepositoryOptions,
-  ) {
-    const {sequelize} = options.database;
-    const currentUser = options.currentUser;
-
-    const ALGO_VALUE = 0;
-
-    const showcase_statement = `select "assetId" from "algoShowcases" where "userId"='${currentUser.id}'`;
-    const result = await sequelize.query(showcase_statement, { type: sequelize.QueryTypes.SELECT });
-    const assetId = result.length > 0 ? result[0].assetId : ALGO_VALUE;
-
-    const showcase_name_statement = `select "name", "unitName" from "algoAssetHistory" where "assetId"='${assetId}' order by "createdDate" desc`;
-    const showcaseNameResult = await sequelize.query(showcase_name_statement, { type: sequelize.QueryTypes.SELECT });
-    const showcaseName = showcaseNameResult.length > 0 ? showcaseNameResult[0].unitName : '';
-
-    const startDate = moment().subtract(365, 'days').format('YYYY-MM-DD');
-    const endDate = moment().format('YYYY-MM-DD');
-
-    const statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
-      `extract(epoch from date_trunc('day', "createdDate")) as "date" ` + 
-      `from "algoAssetHistory" where "assetId"='${assetId}' and date_trunc('day', "createdDate") ` +
-      `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))::DATE);`
-    const showcaseData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
-
-    const top_assets_statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
-      order by "createdDate" desc limit 1) order by id limit 10;`;
-    const topAssets = await sequelize.query(top_assets_statement, { type: sequelize.QueryTypes.SELECT });
-
-    const top_pools_statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where ` +
-      `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by id limit 10;`;
-    const topPools = await sequelize.query(top_pools_statement, { type: sequelize.QueryTypes.SELECT });
-
-    return { showcaseData, showcaseId: assetId, showcaseName, topAssets, topPools };
-  }
-
-  static async setShowcase(
+  static async putFavorite(
     options: IRepositoryOptions,
     assetId,
   ) {
-    const {sequelize} = options.database;
     const currentUser = options.currentUser;
+    const transaction = SequelizeRepository.getTransaction(options);
 
-    const transaction = SequelizeRepository.getTransaction(
-      options,
+    const record = await options.database.algoFavorite.findOne(
+      {
+        where: {
+          assetId,
+          userId: currentUser.id,
+        },
+        transaction,
+      },
     );
+
+    if (!record) {
+      await options.database.algoFavorite.create(
+        {
+          assetId,
+          userId: currentUser.id,
+        },
+        {
+          transaction,
+        }
+      )
+    }
+    else {
+      await record.destroy({
+        transaction,
+      });
+    }
+
+    return { 'result': 'ok' };
+  }
+
+  static async putShowcase(
+    options: IRepositoryOptions,
+    assetId,
+  ) {
+    const currentUser = options.currentUser;
+    const transaction = SequelizeRepository.getTransaction(options);
 
     const record = await options.database.algoShowcase.findOne(
       {
@@ -235,23 +232,98 @@ export default class AlgorandRepository {
         transaction,
       }
     );
-
-
-    const showcase_name_statement = `select "name", "unitName" from "algoAssetHistory" where "assetId"='${assetId}' order by "createdDate" desc`;
-    const showcaseNameResult = await sequelize.query(showcase_name_statement, { type: sequelize.QueryTypes.SELECT });
-    const showcaseName = showcaseNameResult.length > 0 ? showcaseNameResult[0].unitName : '';
-
-    const startDate = moment().subtract(365, 'days').format('YYYY-MM-DD');
-    const endDate = moment().format('YYYY-MM-DD');
-
-    const statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
-      `extract(epoch from date_trunc('day', "createdDate")) as "date" ` + 
-      `from "algoAssetHistory" where "assetId"='${assetId}' and date_trunc('day', "createdDate") ` +
-      `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))::DATE);`
-    const showcaseData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
-
-    return { showcaseId: assetId, showcaseName, showcaseData };
+    
+    return { 'result': 'ok' };
   }
+
+  // static async getShowcase(
+  //   options: IRepositoryOptions,
+  // ) {
+  //   const {sequelize} = options.database;
+  //   const currentUser = options.currentUser;
+
+  //   const ALGO_VALUE = 0;
+
+  //   const showcase_statement = `select "assetId" from "algoShowcases" where "userId"='${currentUser.id}'`;
+  //   const result = await sequelize.query(showcase_statement, { type: sequelize.QueryTypes.SELECT });
+  //   const assetId = result.length > 0 ? result[0].assetId : ALGO_VALUE;
+
+  //   const showcase_name_statement = `select "name", "unitName" from "algoAssetHistory" where "assetId"='${assetId}' order by "createdDate" desc`;
+  //   const showcaseNameResult = await sequelize.query(showcase_name_statement, { type: sequelize.QueryTypes.SELECT });
+  //   const showcaseName = showcaseNameResult.length > 0 ? showcaseNameResult[0].unitName : '';
+
+  //   const startDate = moment().subtract(365, 'days').format('YYYY-MM-DD');
+  //   const endDate = moment().format('YYYY-MM-DD');
+
+  //   const statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
+  //     `extract(epoch from date_trunc('day', "createdDate")) as "date" ` + 
+  //     `from "algoAssetHistory" where "assetId"='${assetId}' and date_trunc('day', "createdDate") ` +
+  //     `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))::DATE);`
+  //   const showcaseData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
+  //   const top_assets_statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` + `
+  //     order by "createdDate" desc limit 1) order by id limit 10;`;
+  //   const topAssets = await sequelize.query(top_assets_statement, { type: sequelize.QueryTypes.SELECT });
+
+  //   const top_pools_statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where ` +
+  //     `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by id limit 10;`;
+  //   const topPools = await sequelize.query(top_pools_statement, { type: sequelize.QueryTypes.SELECT });
+
+  //   return { showcaseData, showcaseId: assetId, showcaseName, topAssets, topPools };
+  // }
+
+  // static async setShowcase(
+  //   options: IRepositoryOptions,
+  //   assetId,
+  // ) {
+  //   const {sequelize} = options.database;
+  //   const currentUser = options.currentUser;
+
+  //   const transaction = SequelizeRepository.getTransaction(
+  //     options,
+  //   );
+
+  //   const record = await options.database.algoShowcase.findOne(
+  //     {
+  //       where: {
+  //         userId: currentUser.id,
+  //       },
+  //       transaction,
+  //     },
+  //   );
+
+  //   if (record) {
+  //     await record.destroy({
+  //       transaction,
+  //     });
+  //   }
+    
+  //   await options.database.algoShowcase.create(
+  //     {
+  //       assetId,
+  //       userId: currentUser.id,
+  //     },
+  //     {
+  //       transaction,
+  //     }
+  //   );
+
+
+  //   const showcase_name_statement = `select "name", "unitName" from "algoAssetHistory" where "assetId"='${assetId}' order by "createdDate" desc`;
+  //   const showcaseNameResult = await sequelize.query(showcase_name_statement, { type: sequelize.QueryTypes.SELECT });
+  //   const showcaseName = showcaseNameResult.length > 0 ? showcaseNameResult[0].unitName : '';
+
+  //   const startDate = moment().subtract(365, 'days').format('YYYY-MM-DD');
+  //   const endDate = moment().format('YYYY-MM-DD');
+
+  //   const statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
+  //     `extract(epoch from date_trunc('day', "createdDate")) as "date" ` + 
+  //     `from "algoAssetHistory" where "assetId"='${assetId}' and date_trunc('day', "createdDate") ` +
+  //     `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))::DATE);`
+  //   const showcaseData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
+  //   return { showcaseId: assetId, showcaseName, showcaseData };
+  // }
 
   static async getFavorites(
     options: IRepositoryOptions,
@@ -420,55 +492,5 @@ export default class AlgorandRepository {
     const detailResult = await sequelize.query(detail_statement, { type: sequelize.QueryTypes.SELECT });
     
     return { show: detailResult[0], dailyPoolData, dailyOneRates, dailyTwoRates, hourlyOneRates, hourlyTwoRates };
-  }
-
-  static async toggleFavorite(
-    options: IRepositoryOptions,
-    assetId,
-  ) {
-    const {sequelize} = options.database;
-    const currentUser = options.currentUser;
-
-    const transaction = SequelizeRepository.getTransaction(
-      options,
-    );
-
-    const record = await options.database.algoFavorite.findOne(
-      {
-        where: {
-          assetId,
-          userId: currentUser.id,
-        },
-        transaction,
-      },
-    );
-
-    if (!record) {
-      await options.database.algoFavorite.create(
-        {
-          assetId,
-          userId: currentUser.id,
-        },
-        {
-          transaction,
-        }
-      )
-    }
-    else {
-      await record.destroy({
-        transaction,
-      });
-    }
-
-    const fav_statement = `select array_agg("assetId") as "assets" from "algoFavorites" where "userId"='${currentUser.id}'`;
-    const favResult = await sequelize.query(fav_statement, { type: sequelize.QueryTypes.SELECT });
-    const list = favResult[0].assets ?? [];
-
-    const top_fav_statement = `select *,  1 as "status" from "algoAssetHistory" where (id >= (select id from "algoAssetHistory" where "unitName"='ALGO'` +
-      `order by "createdDate" desc limit 1)) and ("assetId" in (select "assetId" from "algoFavorites" where "userId"='${currentUser.id}'))`;
-      // `limit 5`;
-    const top = await sequelize.query(top_fav_statement, { type: sequelize.QueryTypes.SELECT });
-
-    return { list, top };
   }
 }
