@@ -94,7 +94,7 @@ export default class AlgorandRepository {
     `(id >= (select id from "algoAssetHistory" where "unitName"='ALGO' order by "createdDate" desc limit 1)) ` +
     `and ("assetId" in (select "assetId" from "algoFavorites" where "userId"='${currentUser.id}'))`;
     let result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
-    const favoriteIds = result.length > 0 ? result[0].favoriteIds : [];
+    const favoriteIds = result.length > 0 ? (result[0].favoriteIds || []) : [];
     
     statement = `select "assetId" from "algoShowcases" where "userId"='${currentUser.id}'`;
     result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
