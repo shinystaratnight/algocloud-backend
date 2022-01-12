@@ -11,7 +11,6 @@ export default async (req, res, next) => {
 
     const payload = await new AlgorandService(req).getAlgoPool(
       req.params.address,
-      req.query,
     );
 
     await ApiResponseHandler.success(req, res, payload);

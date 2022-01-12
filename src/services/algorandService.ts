@@ -61,11 +61,10 @@ export default class AlgorandService {
     );
   }
 
-  async getAlgoPool(address, filter) {
+  async getAlgoPool(address) {
     return AlgorandRepository.getPool(
       this.options,
       address,
-      filter,
     );
   }
 }

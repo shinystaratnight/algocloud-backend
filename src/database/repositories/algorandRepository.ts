@@ -288,6 +288,7 @@ export default class AlgorandRepository {
     let statement = `select * from "algoAssetHistory" where id >= (select id from "algoAssetHistory" where "unitName"='ALGO' ` +
       `order by "createdDate" desc limit 1) order by ${orderBy} limit ${limit} offset ${offset}`;
     const rows = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+
     statement = `select count(*) as count from "algoAssetHistory" where id >= (select id from "algoAssetHistory" ` +
       `where "unitName"='ALGO' order by "createdDate" desc limit 1)`;
     const result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
@@ -304,11 +305,16 @@ export default class AlgorandRepository {
   ) {
     const {sequelize} = options.database;
 
-    const statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where ` +
-      `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by id`;
-    const pools = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+    let statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where "assetOneUnitName"='USDC' ` +
+      `and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) order by ${orderBy} limit ${limit} offset ${offset}`;
+    const rows = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
 
-    return { list: pools };
+    statement = `select count(*) as count from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where ` +
+    `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1)`;
+    const result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+    const count = result.length > 0 ? result[0].count : 0;
+    
+    return { rows, count };
   }
 
 
@@ -382,7 +388,6 @@ export default class AlgorandRepository {
   static async getPool(
     options: IRepositoryOptions,
     address,
-    { orderBy, limit, offset }
   ) {
     const {sequelize} = options.database;
 
