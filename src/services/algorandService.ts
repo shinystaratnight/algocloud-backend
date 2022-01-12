@@ -32,9 +32,10 @@ export default class AlgorandService {
     );
   }
 
-  async getAlgoFavorites() {
-    return AlgorandRepository.getFavorites(
+  async getAlgoFavoriteList(filter) {
+    return AlgorandRepository.getFavoriteList(
       this.options,
+      filter,
     );
   }
 
@@ -45,9 +46,10 @@ export default class AlgorandService {
     );
   }
   
-  async getAlgoPools() {
-    return AlgorandRepository.getPools(
+  async getAlgoPoolList(filter) {
+    return AlgorandRepository.getPoolList(
       this.options,
+      filter,
     );
   }
   
@@ -59,10 +61,11 @@ export default class AlgorandService {
     );
   }
 
-  async getAlgoPoolDetail(address) {
-    return AlgorandRepository.getPoolDetail(
+  async getAlgoPool(address, filter) {
+    return AlgorandRepository.getPool(
       this.options,
       address,
+      filter,
     );
   }
 }

@@ -17,7 +17,7 @@ export default (app) => {
 
   app.get(
     `/tenant/:tenantId/algorand/favorites`,
-    require('./favorites/algoFavorites').default,
+    require('./algorandFavoriteList').default,
   );
 
   app.get(
@@ -27,7 +27,7 @@ export default (app) => {
 
   app.get(
     `/tenant/:tenantId/algorand/pools`,
-    require('./pools/algoPools').default,
+    require('./algorandPoolList').default,
   );
 
   app.get(
@@ -37,6 +37,6 @@ export default (app) => {
 
   app.get(
     `/tenant/:tenantId/algorand/pool/:address`,
-    require('./pools/algoPoolDetail').default,
+    require('./algorandPool').default,
   );
 };
