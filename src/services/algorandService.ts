@@ -38,9 +38,10 @@ export default class AlgorandService {
     );
   }
 
-  async getAlgoAssets() {
-    return AlgorandRepository.getAssets(
+  async getAlgoAssetList(filter) {
+    return AlgorandRepository.getAssetList(
       this.options,
+      filter,
     );
   }
   

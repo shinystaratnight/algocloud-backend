@@ -22,7 +22,7 @@ export default (app) => {
 
   app.get(
     `/tenant/:tenantId/algorand/assets`,
-    require('./assets/algoAssets').default,
+    require('./algorandAssetList').default,
   );
 
   app.get(
