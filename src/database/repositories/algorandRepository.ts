@@ -1,6 +1,6 @@
-import { IRepositoryOptions } from './IRepositoryOptions';
 import _ from 'lodash';
 import moment from 'moment';
+import { IRepositoryOptions } from './IRepositoryOptions';
 import SequelizeRepository from './sequelizeRepository';
 
 const ALGO_ASSET_ID = 0;
@@ -32,7 +32,6 @@ const makeOHLC = (arr) => {
     'high': sortedArr[3],
   });
 };
-
 
 const makePairRates = (arr) => {
   let oneReserves: number[] = [];
@@ -393,29 +392,29 @@ export default class AlgorandRepository {
   }
 
 
-  static async getAssetDetail(
+  static async getAsset(
     options: IRepositoryOptions,
     assetId,
+    { orderBy, limit, offset }
   ) {
     const {sequelize} = options.database;
 
     const startDate = moment().subtract(365, 'days').format('YYYY-MM-DD');
     const endDate = moment().format('YYYY-MM-DD');
-
     const startDateTime = moment().subtract(365, 'days').format('YYYY-MM-DD') + ` 08:00:00`;
     const endDateTime = moment().format('YYYY-MM-DD') + ` 08:00:00`;
 
-    const volume_statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
+    let statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
       `extract(epoch from date_trunc('day', "createdDate")) as "date" ` + 
       `from "algoAssetHistory" where "assetId"='${assetId}' and date_trunc('day', "createdDate") ` +
       `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))::DATE);`
-    const dailyAssetData = await sequelize.query(volume_statement, { type: sequelize.QueryTypes.SELECT });
+    const dailyAssetData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
 
-    const daily_statement = `select date_trunc('hour', "createdDate") as "date", array_agg("price") as "prices" ` +
+    statement = `select date_trunc('hour', "createdDate") as "date", array_agg("price") as "prices" ` +
       `from "algoAssetHistory" where "assetId"='${assetId}' and date_trunc('hour', "createdDate") ` +
       `in (SELECT (generate_series('${startDateTime}', '${endDateTime}', '1 day'::interval))) group by "date"`;
-    const dailyPricesResult = await sequelize.query(daily_statement, { type: sequelize.QueryTypes.SELECT });
-    const dailyPrices = dailyPricesResult.map(asset => {
+    let result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+    const dailyPrices = result.map(asset => {
       const { open, high, low, close } = makeOHLC(asset.prices);
       return ({
         'timestamp': asset.date,
@@ -426,11 +425,11 @@ export default class AlgorandRepository {
       });
     });
 
-    const hourly_statement = `select extract(epoch from date_trunc('hour', "createdDate")) as "date", array_agg("price") as "prices" ` +
+    statement = `select extract(epoch from date_trunc('hour', "createdDate")) as "date", array_agg("price") as "prices" ` +
       `from "algoAssetHistory" where "assetId"='${assetId}' and date_trunc('day', "createdDate") ` +
       `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))) group by "date"`;
-    const hourlyPricesResult = await sequelize.query(hourly_statement, { type: sequelize.QueryTypes.SELECT });
-    const hourlyPrices = hourlyPricesResult.map(asset => {
+    result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+    const hourlyPrices = result.map(asset => {
       const { open, high, low, close } = makeOHLC(asset.prices);
       return ({
         'timestamp': asset.date,
@@ -441,16 +440,22 @@ export default class AlgorandRepository {
       });
     });
 
-    const pools_statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where` +
+    statement = `select * from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where` +
       `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) and ` +
-      `("assetOneId" = '${assetId}' or "assetTwoId"='${assetId}') limit 10`;
-    const topPools = await sequelize.query(pools_statement, { type: sequelize.QueryTypes.SELECT });
+      `("assetOneId" = '${assetId}' or "assetTwoId"='${assetId}') order by ${orderBy} limit ${limit} offset ${offset}`;
+    const pools = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+    statement = `select count(*) from "algoPoolHistory" where id >= (select id from "algoPoolHistory" where` +
+      `"assetOneUnitName"='USDC' and "assetTwoUnitName"='ALGO' order by "createdDate" desc limit 1) and ` +
+      `("assetOneId" = '${assetId}' or "assetTwoId"='${assetId}')`;
+    result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+    const count = (result.length > 0) ? result[0].count : 0;
 
-    const detail_statement = `select * from "algoAssetHistory" where "assetId"='${assetId}' ` +
+    statement = `select * from "algoAssetHistory" where "assetId"='${assetId}' ` +
       `order by "createdDate" desc limit 1`;
-    const detailResult = await sequelize.query(detail_statement, { type: sequelize.QueryTypes.SELECT });
+    result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+    const data = (result.length > 0) ? result[0] : {};
 
-    return { show: detailResult[0], dailyAssetData, dailyPrices, hourlyPrices, topPools };
+    return { data, dailyAssetData, dailyPrices, hourlyPrices, pools, count };
   }
 
 

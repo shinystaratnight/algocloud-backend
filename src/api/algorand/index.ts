@@ -32,7 +32,7 @@ export default (app) => {
 
   app.get(
     `/tenant/:tenantId/algorand/asset/:assetId`,
-    require('./assets/algoAssetDetail').default,
+    require('./algorandAsset').default,
   );
 
   app.get(
