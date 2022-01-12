@@ -397,17 +397,17 @@ export default class AlgorandRepository {
     const startDateTime = moment().subtract(365, 'days').format('YYYY-MM-DD') + ` 08:00:00`;
     const endDateTime = moment().format('YYYY-MM-DD') + ` 08:00:00`;
 
-    const volume_statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
+    let statement = `select distinct on (date_trunc('day', "createdDate")) "liquidity", "lastDayVolume", ` +
       `extract(epoch from date_trunc('day', "createdDate")) as "date" ` + 
       `from "algoPoolHistory" where "address"='${address}' and date_trunc('day', "createdDate") ` +
       `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))::date);`
-    const dailyPoolData = await sequelize.query(volume_statement, { type: sequelize.QueryTypes.SELECT });
+    const dailyPoolData = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
 
-    const daily_statement = `select extract(epoch from date_trunc('hour', "createdDate")) as "date", ` +
+    statement = `select extract(epoch from date_trunc('hour', "createdDate")) as "date", ` +
       `array_agg(("assetOneReserves", "assetTwoReserves")) as "reservePairs" ` +
       `from "algoPoolHistory" where "address"='${address}' and date_trunc('hour', "createdDate") ` +
       `in (SELECT (generate_series('${startDateTime}', '${endDateTime}', '1 day'::interval))) group by "date"`;
-    const dailyRatesResult = await sequelize.query(daily_statement, { type: sequelize.QueryTypes.SELECT });
+    const dailyRatesResult = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
 
     let dailyOneRates: any[] = [];
     let dailyTwoRates: any[] = [];
@@ -423,11 +423,11 @@ export default class AlgorandRepository {
       });
     });
 
-    const hourly_statement = `select extract(epoch from date_trunc('hour', "createdDate")) as "date", ` +
+    statement = `select extract(epoch from date_trunc('hour', "createdDate")) as "date", ` +
       `array_agg("assetOneReserves" || ',' || "assetTwoReserves") as "reservePairs" ` +
       `from "algoPoolHistory" where "address"='${address}' and date_trunc('day', "createdDate") ` +
       `in (SELECT (generate_series('${startDate}', '${endDate}', '1 day'::interval))) group by "date"`;
-    const hourlyRatesResult = await sequelize.query(hourly_statement, { type: sequelize.QueryTypes.SELECT });
+    const hourlyRatesResult = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
 
     let hourlyOneRates: any[] = [];
     let hourlyTwoRates: any[] = [];
@@ -443,9 +443,10 @@ export default class AlgorandRepository {
       });
     });
 
-    const detail_statement = `select * from "algoPoolHistory" where "address"='${address}' order by "createdDate" desc limit 1`;
-    const detailResult = await sequelize.query(detail_statement, { type: sequelize.QueryTypes.SELECT });
+    statement = `select * from "algoPoolHistory" where "address"='${address}' order by "createdDate" desc limit 1`;
+    const result = await sequelize.query(statement, { type: sequelize.QueryTypes.SELECT });
+    const data = (result.length > 0) ? result[0] : {};
     
-    return { show: detailResult[0], dailyPoolData, dailyOneRates, dailyTwoRates, hourlyOneRates, hourlyTwoRates };
+    return { data, dailyPoolData, dailyOneRates, dailyTwoRates, hourlyOneRates, hourlyTwoRates };
   }
 }
